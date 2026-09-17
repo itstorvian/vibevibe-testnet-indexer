@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+
+# Secrets: never commit a keyed RPC URL.
+# .env.example IS committed; real .env files are not.
+.env
+.env.*
+!.env.example
+
+# Generated data. All of it is regenerable by re-running the indexer.
+# A full run produces ~400 MB per bulk artifact, so none of it belongs in git.
+data/
+output/
+cache/
+
+# sample-output/ IS committed: small, sanitized, demonstrative.
+!sample-output/
+!sample-output/**
+
+# Logs
+*.log
+validation-run.log
+
+# Build artifacts
+dist/
+build/
+*.tsbuildinfo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Test/coverage
+coverage/
+.nyc_output/

@@ -1,0 +1,180 @@
+{
+ "_README": "SAMPLE ONLY: the small summary artifacts from one real testnet run, trimmed. Produced by: npm run index -- --enrich-limit 800 --trade-window 200000 --burn-window 2000000 --compare-api. NOTE: this sample predates two fields that current runs emit, run.rpcEndpoint and run.foreignActivity. They are absent here because this run happened before they existed, not because they are optional. The figures have deliberately NOT been regenerated or back-filled.",
+ "network": "TESTNET",
+ "chainId": 46630,
+ "run": {
+  "headBlock": 118855856,
+  "startedAt": "2026-09-13T17:36:32.215Z",
+  "finishedAt": "2026-09-13T17:38:24.919Z",
+  "enrichLimit": 800,
+  "tradeWindow": [
+   118655856,
+   118855856
+  ],
+  "tradesAreFullHistory": false,
+  "rpcStats": {
+   "rpcCalls": 167,
+   "retries": 0,
+   "failures": 0,
+   "chunkSplits": 0,
+   "elapsedSeconds": 113,
+   "callsPerSecond": 1.48
+  }
+ },
+ "launchesByGeneration": {
+  "retired": {
+   "factory": "0x4FEbC267e0C24440bcDEF72B5DBC5FE7BED091dF",
+   "launchesIndexed": 14671,
+   "firstLaunchBlock": 95927102,
+   "lastLaunchBlock": 118854727
+  },
+  "legacy": {
+   "factory": "0xB5B7A2f6c4EAFa2D73918fcA32d50e2126339eb9",
+   "launchesIndexed": 41859,
+   "firstLaunchBlock": 108965249,
+   "lastLaunchBlock": 118838345
+  },
+  "current": {
+   "factory": "0x40f1be6faf8DAB9C143cce1a0A04c2075Fb2DF59",
+   "launchesIndexed": 20696,
+   "firstLaunchBlock": 115461989,
+   "lastLaunchBlock": 118854740
+  }
+ },
+ "totalLaunches": 77226,
+ "launchIdAudit": {
+  "retired": {
+   "count": 14671,
+   "minLaunchId": "0",
+   "maxLaunchId": "14670",
+   "expectedIfDense": "14671",
+   "dense": true,
+   "duplicateIds": 0,
+   "sampleMissingIds": []
+  },
+  "legacy": {
+   "count": 41859,
+   "minLaunchId": "0",
+   "maxLaunchId": "41858",
+   "expectedIfDense": "41859",
+   "dense": true,
+   "duplicateIds": 0,
+   "sampleMissingIds": []
+  },
+  "current": {
+   "count": 20696,
+   "minLaunchId": "0",
+   "maxLaunchId": "20695",
+   "expectedIfDense": "20696",
+   "dense": true,
+   "duplicateIds": 0,
+   "sampleMissingIds": []
+  }
+ },
+ "feePolicyByGeneration": {
+  "retired": {
+   "factory": "0x4FEbC267e0C24440bcDEF72B5DBC5FE7BED091dF",
+   "totalFeeBps": "100",
+   "creatorShareOfFeeBps": "5000",
+   "protocolShareOfFeeBps": "5000",
+   "netGraduationTargetWei": "5000000000000000",
+   "evidence": "VERIFIED ONCHAIN: direct TOTAL_FEE_BPS() reads on 6 curves returned 100; 126/126 indexed non-dust trades matched 100 bps at a 5000 bps creator share, within 2 wei. NET_GRADUATION_TARGET() read 5e15. quoteCurrency() reverts (function absent)."
+  },
+  "legacy": {
+   "factory": "0xB5B7A2f6c4EAFa2D73918fcA32d50e2126339eb9",
+   "totalFeeBps": "125",
+   "creatorShareOfFeeBps": "7500",
+   "protocolShareOfFeeBps": "2500",
+   "netGraduationTargetWei": null,
+   "evidence": "VERIFIED ONCHAIN for fee and split: TOTAL_FEE_BPS() reads 125 on enriched gen2 curves and 28,805/28,805 indexed non-dust trades matched 125 bps at 7500 bps. Graduation target and virtual reserve NOT read for this generation; left null rather than assumed equal to gen3."
+  },
+  "current": {
+   "factory": "0x40f1be6faf8DAB9C143cce1a0A04c2075Fb2DF59",
+   "totalFeeBps": "125",
+   "creatorShareOfFeeBps": "7500",
+   "protocolShareOfFeeBps": "2500",
+   "netGraduationTargetWei": "5000000000000000000",
+   "evidence": "VERIFIED ONCHAIN: TOTAL_FEE_BPS() constant across 2,499 enriched curves; 63,473/63,473 indexed non-dust trades matched 125 bps at 7500 bps."
+  }
+ },
+ "observed": {
+  "grossVolumeWei": "233051502681479669519",
+  "totalFeesWei": "2913106916018504299",
+  "creatorFeesWei": "2184793319513871218",
+  "protocolFeesWei": "728313596504633081",
+  "impliedFeeBps": 124.99,
+  "impliedCreatorShareBps": 7499,
+  "tradeCount": 35750
+ },
+ "buybackBurn": {
+  "note": "Two legs. Pre-graduation, transfersUnlocked()==false prevents a transfer to 0x...dEaD, so bought-back tokens are HELD in the launch CreatorVault. Counting only the burn address under-reports supply impact.",
+  "burnAddress": "0x000000000000000000000000000000000000dEaD",
+  "totalBurnedBaseUnits": "2723096478860535353822056",
+  "totalHeldForBurnBaseUnits": "224201819981758281239008469",
+  "totalCommittedBaseUnits": "226924916460618816592830525",
+  "projectsWithBurn": 2,
+  "projectsWithVaultHoldings": 673
+ },
+ "sanityChecks": [
+  {
+   "name": "total fee matches each generation's policy",
+   "passed": true,
+   "observed": "35669/35669 within 2 wei [current:25302/25302@125bps, legacy:10197/10197@125bps, retired:170/170@100bps]; 81 dust trades (<1000 wei gross) excluded; 0 on generations with no observed policy"
+  },
+  {
+   "name": "creator/protocol split matches each generation's policy",
+   "passed": true,
+   "observed": "35669/35669 within 2 wei [current:25302/25302@7500bps, legacy:10197/10197@7500bps, retired:170/170@5000bps]; 81 dust excluded; 0 unknown-policy"
+  },
+  {
+   "name": "creatorFee + protocolFee == totalFee",
+   "passed": true,
+   "observed": "35750/35750"
+  },
+  {
+   "name": "pre-graduation buybacks are held in vault, not burned",
+   "passed": true,
+   "observed": "800 projects examined; 673 locked-with-vault-holdings, 0 locked-with-burn (must be 0), 2 unlocked-with-burn"
+  },
+  {
+   "name": "TOTAL_FEE_BPS is uniform within each generation",
+   "passed": true,
+   "observed": "retired=100, legacy=125, current=125 across 800 curves"
+  }
+ ],
+ "apiCrossCheck": {
+  "note": "OPTIONAL cross-check. Never a source of truth.",
+  "corsPolicy": {
+   "withoutOriginHeader": "HTTP 200",
+   "withForeignOriginHeader": "HTTP 403",
+   "conclusion": "Server-side reads work; browser reads from a third-party origin are blocked at the edge. A third-party web app needs its own proxy."
+  },
+  "rateLimit": {
+   "limit": "60",
+   "remaining": "59"
+  },
+  "configMatchesOnChainConstants": true,
+  "spotChecks": {
+   "agree": 12,
+   "disagree": 0,
+   "inconclusive": 2
+  }
+ },
+ "_SAMPLE_IS_HISTORICAL": {
+  "thisSampleWasCapturedAt": "2026-09-13T17:38:24.919Z",
+  "thisSampleHeadBlock": 118855856,
+  "thisSampleTotalLaunches": 77226,
+  "latestValidationRun": {
+   "date": "2026-09-17",
+   "headBlock": 120708793,
+   "totalLaunches": 96398,
+   "perGeneration": {
+    "retired": 14799,
+    "legacy": 42946,
+    "current": 38653
+   }
+  },
+  "why": "Real output from a real run on 2026-09-13, kept as a shape reference. Not regenerated for the 2026-09-17 validation run, and deliberately not hand-edited.",
+  "howToRead": "Totals here are a point-in-time observation of a live chain, not a current figure. See the 'Latest validation run' section of README.md."
+ }
+}

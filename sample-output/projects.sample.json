@@ -1,0 +1,4519 @@
+{
+ "_README": "SAMPLE ONLY: 14 of ~77,000 indexed projects, chosen to demonstrate the accounting traps documented in docs/. Regenerate the full set with: npm run index -- --emit-bulk",
+ "network": "TESTNET",
+ "chainId": 46630,
+ "generatedAt": "2026-09-13T17:38:28.126Z",
+ "sampleSize": 14,
+ "fullRunProjectCount": 500,
+ "demonstrates": [
+  "retired generation at 100 bps with a 50/50 split (vs 125 bps / 75-25 on legacy+current)",
+  "vault-held buyback tokens that a dead-address-only indexer would report as zero",
+  "locked (pre-graduation) vs unlocked (graduated) transfer state",
+  "composite {generation}:{launchId} keys; launchId alone collides across factories",
+  "per-field provenance envelopes"
+ ],
+ "provenanceLegend": {
+  "onchain_event": "decoded from a contract event log (strongest)",
+  "contract_read": "eth_call, HEAD-ONLY on this RPC (state is pruned after ~4k blocks)",
+  "vibe_api": "operator API, never used as a source of truth in this file",
+  "derived": "computed from other fields in this record",
+  "config": "constant from the verified address book",
+  "unavailable": "value is null; the note explains why"
+ },
+ "noteLegend": {
+  "n0": "bounded scan: blocks 118655856..118855856 only, not full history",
+  "n1": "outside --enrich-limit",
+  "n2": "per-factory counter; NOT globally unique",
+  "n3": "IPFS URI; content not fetched by this indexer",
+  "n4": "on-chain commitment to the IPFS content",
+  "n5": "Uniswap v4 PoolManager (verified source)",
+  "n6": "No real Robinhood Stock Token exists on testnet 46630. All 194 RHJ assets are mainnet-4663-only.",
+  "n7": "bounded scan: blocks 118655856..118855856 only, not full history; distinct msg.sender only, not beneficial owners",
+  "n8": "the per-launch CreatorVault (EIP-1167 clone) is the project-side treasury: it receives the creator fee share and holds buyback tokens pre-graduation",
+  "n9": "native ETH-quoted launch",
+  "n10": "not a stock-quoted launch",
+  "n11": "not graduated, or no graduation evidence in scanned range",
+  "n12": "no burn events for this token in the scanned window",
+  "n13": "outside --enrich-limit; name/symbol live only in contract state, not in any event",
+  "n14": "curve.launchTimestamp() not read (outside --enrich-limit). Block timestamp would require an extra eth_getBlockByNumber per launch.",
+  "n15": "no head-state read for this curve (outside --enrich-limit) and no lifecycle event in the scanned window",
+  "n16": "no head read and no burn events in the scanned window",
+  "n17": "vault balance not read (outside --enrich-limit)",
+  "n18": "needs both the burn read and the vault read",
+  "n19": "no trades observed in the scanned range",
+  "n20": "no fees observed in the scanned range",
+  "n21": "generation-specific (legacy)",
+  "n22": "generation-specific (current)",
+  "n23": "generation-specific (retired)",
+  "n24": "expected 125 bps for generation \"current\"",
+  "n25": "expected 7500 bps for generation \"current\"",
+  "n26": "expected 125 bps for generation \"legacy\"",
+  "n27": "expected 7500 bps for generation \"legacy\"",
+  "n28": "head-only read @ block 118855856",
+  "n29": "unclaimed balance @ block 118855856",
+  "n30": "unix seconds",
+  "n31": "head-only @ block 118855856",
+  "n32": "balanceOf(0x...dEaD) @ block 118855856",
+  "n33": "CreatorVault token balance @ block 118855856. Pre-graduation buybacks are held here because transfersUnlocked()==false blocks a transfer to the burn address.",
+  "n34": "burned(at 0x...dEaD) + heldForBurn(in vault). Counting only the burn address under-reports pre-graduation tokens.",
+  "n35": "expected 100 bps for generation \"retired\"",
+  "n36": "expected 5000 bps for generation \"retired\""
+ },
+ "noteLegendUsage": "A field with `noteCode` resolves its explanation through noteLegend. A field with an inline `note` carries a one-off explanation.",
+ "projects": [
+  {
+   "key": "retired:14670",
+   "identity": {
+    "launchId": {
+     "value": "14670",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n2"
+    },
+    "generation": {
+     "value": "retired",
+     "source": "config",
+     "confidence": "high"
+    },
+    "factory": {
+     "value": "0x4FEbC267e0C24440bcDEF72B5DBC5FE7BED091dF",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "factoryVersionNote": {
+     "value": "Filed under `retiredPublicGraphs` by the operator, but STILL PRODUCING LAUNCHES: a launch was observed at block 118,824,737. Runs materially different economics from the newer generations: 100 bps at a 50/50 split, and a graduation target 1000x smaller. Its most recent launches were not served by the operator's public API during testing.",
+     "source": "config",
+     "confidence": "high"
+    },
+    "token": {
+     "value": "0xfc2c0f4f762d412a40d17d1b2f259e4c77960783",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "curve": {
+     "value": "0x61f74eb7dd7e275ea8b2ce226858bae401bf61f8",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creator": {
+     "value": "0x1f3a91bd3615542235c38fbc4795afc964ce9bab",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorFeeRecipient": {
+     "value": "0x1f3a91bd3615542235c38fbc4795afc964ce9bab",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorVault": {
+     "value": "0xdaaa5126197f4198d0d1dbd46d92f5466bd77552",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "name": {
+     "value": "VaultPepe897",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "symbol": {
+     "value": "VAUPE",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "decimals": {
+     "value": 18,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "metadataURI": {
+     "value": "ipfs://bafkreibcrlhyl7gdreqcyw5x6mfxpqlovfr4aug4o4kdelzsv6gmcfzoqa",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n3"
+    },
+    "metadataDigest": {
+     "value": "0xd7ac2c8ec8448be04e84a05162f4e87d9fa9a03d9a892cf3b253602aa1d2fb20",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n4"
+    }
+   },
+   "timing": {
+    "deploymentBlock": {
+     "value": 118854727,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "deploymentTxHash": {
+     "value": "0x69c692fb18833a7568fb081261e0bd46f02871449e080beedf28badce27aa8a3",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "launchTimestamp": {
+     "value": "1789320858",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n30"
+    }
+   },
+   "lifecycle": {
+    "state": {
+     "value": "CURVE_TRADING",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "transfersUnlocked": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n31"
+    },
+    "curveCompletedBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduated": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "graduationTxHash": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduationBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "poolId": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n11"
+    },
+    "poolManager": {
+     "value": "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n5"
+    }
+   },
+   "market": {
+    "quoteAsset": {
+     "value": "0x0000000000000000000000000000000000000000",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n9"
+    },
+    "quoteAssetSymbol": {
+     "value": "ETH",
+     "source": "config",
+     "confidence": "high"
+    },
+    "isQuotedLaunch": {
+     "value": false,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "quoteAssetIsMockStock": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n10"
+    },
+    "quoteAssetIsRealRobinhoodStockToken": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n6"
+    }
+   },
+   "activity": {
+    "totalTrades": {
+     "value": 11,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyCount": {
+     "value": 11,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellCount": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyVolumeWei": {
+     "value": "929000000000000",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "totalVolumeWei": {
+     "value": "929000000000000",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "uniqueTraders": {
+     "value": 11,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n7"
+    }
+   },
+   "fees": {
+    "totalFeesWei": {
+     "value": "9290000000000",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "creatorFeesWei": {
+     "value": "4645000000000",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "protocolFeesWei": {
+     "value": "4645000000000",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "observedFeeBps": {
+     "value": 100,
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n35"
+    },
+    "observedCreatorShareBps": {
+     "value": 5000,
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n36"
+    },
+    "creatorFeesAccruedOnCurve": {
+     "value": "4645000000000",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "protocolFeesAccruedOnCurve": {
+     "value": "4645000000000",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "creatorFeesForwardedWei": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    }
+   },
+   "buybackBurn": {
+    "burnedToDeadAddressWei": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n32"
+    },
+    "heldForBurnInVaultWei": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n33"
+    },
+    "totalSupplyCommittedToBurnWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n34"
+    },
+    "burnEventCount": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n12"
+    }
+   },
+   "treasuries": {
+    "projectTreasury": {
+     "value": "0xdaaa5126197f4198d0d1dbd46d92f5466bd77552",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n8"
+    },
+    "protocolTreasury": {
+     "value": "0x3b13605865D7164d1dfe2080E22910df3a701899",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n23"
+    }
+   },
+   "provenanceSummary": {
+    "onchainEventFields": 14,
+    "contractReadFields": 11,
+    "derivedFields": 13,
+    "unavailableFields": 6
+   }
+  },
+  {
+   "key": "retired:14669",
+   "identity": {
+    "launchId": {
+     "value": "14669",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n2"
+    },
+    "generation": {
+     "value": "retired",
+     "source": "config",
+     "confidence": "high"
+    },
+    "factory": {
+     "value": "0x4FEbC267e0C24440bcDEF72B5DBC5FE7BED091dF",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "factoryVersionNote": {
+     "value": "Filed under `retiredPublicGraphs` by the operator, but STILL PRODUCING LAUNCHES: a launch was observed at block 118,824,737. Runs materially different economics from the newer generations: 100 bps at a 50/50 split, and a graduation target 1000x smaller. Its most recent launches were not served by the operator's public API during testing.",
+     "source": "config",
+     "confidence": "high"
+    },
+    "token": {
+     "value": "0x17e1c5f579a989e49e1ffce61032b84cb99742de",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "curve": {
+     "value": "0x74e247e1b5c4cf067467e282d07f25af747cce6f",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creator": {
+     "value": "0x1da7e75380f6f0d8d27b0b1193e1fda41d9ef736",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorFeeRecipient": {
+     "value": "0x1da7e75380f6f0d8d27b0b1193e1fda41d9ef736",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorVault": {
+     "value": "0xb66dda9d46afb1b749a3a85ee725b43b4ca1cf35",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "name": {
+     "value": "GodCat626",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "symbol": {
+     "value": "GODCA",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "decimals": {
+     "value": 18,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "metadataURI": {
+     "value": "ipfs://bafkreiftpp2drupt2mlq4rkcnysuncwz4m32knjg22ylq6xh7q64quz6xe",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n3"
+    },
+    "metadataDigest": {
+     "value": "0x440516d1fa18c6c3b18ab95ce67ca4b98faad00d1a2db1f235206abfc51b402a",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n4"
+    }
+   },
+   "timing": {
+    "deploymentBlock": {
+     "value": 118853396,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "deploymentTxHash": {
+     "value": "0xfc33ca38e7646652ae8739e4decdef1accb09099a1768f62ec08625c9b4db800",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "launchTimestamp": {
+     "value": "1789320702",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n30"
+    }
+   },
+   "lifecycle": {
+    "state": {
+     "value": "CURVE_TRADING",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "transfersUnlocked": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n31"
+    },
+    "curveCompletedBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduated": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "graduationTxHash": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduationBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "poolId": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n11"
+    },
+    "poolManager": {
+     "value": "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n5"
+    }
+   },
+   "market": {
+    "quoteAsset": {
+     "value": "0x0000000000000000000000000000000000000000",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n9"
+    },
+    "quoteAssetSymbol": {
+     "value": "ETH",
+     "source": "config",
+     "confidence": "high"
+    },
+    "isQuotedLaunch": {
+     "value": false,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "quoteAssetIsMockStock": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n10"
+    },
+    "quoteAssetIsRealRobinhoodStockToken": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n6"
+    }
+   },
+   "activity": {
+    "totalTrades": {
+     "value": 11,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyCount": {
+     "value": 11,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellCount": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyVolumeWei": {
+     "value": "957000000000000",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "totalVolumeWei": {
+     "value": "957000000000000",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "uniqueTraders": {
+     "value": 11,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n7"
+    }
+   },
+   "fees": {
+    "totalFeesWei": {
+     "value": "9570000000000",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "creatorFeesWei": {
+     "value": "4785000000000",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "protocolFeesWei": {
+     "value": "4785000000000",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "observedFeeBps": {
+     "value": 100,
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n35"
+    },
+    "observedCreatorShareBps": {
+     "value": 5000,
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n36"
+    },
+    "creatorFeesAccruedOnCurve": {
+     "value": "4785000000000",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "protocolFeesAccruedOnCurve": {
+     "value": "4785000000000",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "creatorFeesForwardedWei": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    }
+   },
+   "buybackBurn": {
+    "burnedToDeadAddressWei": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n32"
+    },
+    "heldForBurnInVaultWei": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n33"
+    },
+    "totalSupplyCommittedToBurnWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n34"
+    },
+    "burnEventCount": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n12"
+    }
+   },
+   "treasuries": {
+    "projectTreasury": {
+     "value": "0xb66dda9d46afb1b749a3a85ee725b43b4ca1cf35",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n8"
+    },
+    "protocolTreasury": {
+     "value": "0x3b13605865D7164d1dfe2080E22910df3a701899",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n23"
+    }
+   },
+   "provenanceSummary": {
+    "onchainEventFields": 14,
+    "contractReadFields": 11,
+    "derivedFields": 13,
+    "unavailableFields": 6
+   }
+  },
+  {
+   "key": "retired:14668",
+   "identity": {
+    "launchId": {
+     "value": "14668",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n2"
+    },
+    "generation": {
+     "value": "retired",
+     "source": "config",
+     "confidence": "high"
+    },
+    "factory": {
+     "value": "0x4FEbC267e0C24440bcDEF72B5DBC5FE7BED091dF",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "factoryVersionNote": {
+     "value": "Filed under `retiredPublicGraphs` by the operator, but STILL PRODUCING LAUNCHES: a launch was observed at block 118,824,737. Runs materially different economics from the newer generations: 100 bps at a 50/50 split, and a graduation target 1000x smaller. Its most recent launches were not served by the operator's public API during testing.",
+     "source": "config",
+     "confidence": "high"
+    },
+    "token": {
+     "value": "0xb6f1214aeecf910cefad6ab602af403b8f98fef8",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "curve": {
+     "value": "0x34dcc4159316b25820f2b50ec23629b45e57c909",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creator": {
+     "value": "0x0f03474f8f3edbc12f0f1555ff2ae1658b89bdec",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorFeeRecipient": {
+     "value": "0x0f03474f8f3edbc12f0f1555ff2ae1658b89bdec",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorVault": {
+     "value": "0x4dbf1c5ccbe53f4859f33eacaa4a26285598fe4a",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "name": {
+     "value": "GodCat972",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "symbol": {
+     "value": "GODCA",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "decimals": {
+     "value": 18,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "metadataURI": {
+     "value": "ipfs://bafkreie6d3dp63gtxs7xqx25t6mgj27nww7j5vgy6x77aacfp6q6i35dly",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n3"
+    },
+    "metadataDigest": {
+     "value": "0x50ec019ae52069ac5b80bc0578c93ab25eae084d3939036a57130bac3c6ca82b",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n4"
+    }
+   },
+   "timing": {
+    "deploymentBlock": {
+     "value": 118851088,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "deploymentTxHash": {
+     "value": "0x4e3afdfbebe7620997fb8be97a869aa66f65004019c05f9db68fbb3a1bfbe16d",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "launchTimestamp": {
+     "value": "1789320420",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n30"
+    }
+   },
+   "lifecycle": {
+    "state": {
+     "value": "CURVE_TRADING",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "transfersUnlocked": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n31"
+    },
+    "curveCompletedBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduated": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "graduationTxHash": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduationBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "poolId": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n11"
+    },
+    "poolManager": {
+     "value": "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n5"
+    }
+   },
+   "market": {
+    "quoteAsset": {
+     "value": "0x0000000000000000000000000000000000000000",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n9"
+    },
+    "quoteAssetSymbol": {
+     "value": "ETH",
+     "source": "config",
+     "confidence": "high"
+    },
+    "isQuotedLaunch": {
+     "value": false,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "quoteAssetIsMockStock": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n10"
+    },
+    "quoteAssetIsRealRobinhoodStockToken": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n6"
+    }
+   },
+   "activity": {
+    "totalTrades": {
+     "value": 11,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyCount": {
+     "value": 11,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellCount": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyVolumeWei": {
+     "value": "964000000000000",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "totalVolumeWei": {
+     "value": "964000000000000",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "uniqueTraders": {
+     "value": 11,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n7"
+    }
+   },
+   "fees": {
+    "totalFeesWei": {
+     "value": "9640000000000",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "creatorFeesWei": {
+     "value": "4820000000000",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "protocolFeesWei": {
+     "value": "4820000000000",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "observedFeeBps": {
+     "value": 100,
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n35"
+    },
+    "observedCreatorShareBps": {
+     "value": 5000,
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n36"
+    },
+    "creatorFeesAccruedOnCurve": {
+     "value": "4820000000000",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "protocolFeesAccruedOnCurve": {
+     "value": "4820000000000",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "creatorFeesForwardedWei": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    }
+   },
+   "buybackBurn": {
+    "burnedToDeadAddressWei": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n32"
+    },
+    "heldForBurnInVaultWei": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n33"
+    },
+    "totalSupplyCommittedToBurnWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n34"
+    },
+    "burnEventCount": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n12"
+    }
+   },
+   "treasuries": {
+    "projectTreasury": {
+     "value": "0x4dbf1c5ccbe53f4859f33eacaa4a26285598fe4a",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n8"
+    },
+    "protocolTreasury": {
+     "value": "0x3b13605865D7164d1dfe2080E22910df3a701899",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n23"
+    }
+   },
+   "provenanceSummary": {
+    "onchainEventFields": 14,
+    "contractReadFields": 11,
+    "derivedFields": 13,
+    "unavailableFields": 6
+   }
+  },
+  {
+   "key": "current:2142",
+   "identity": {
+    "launchId": {
+     "value": "2142",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n2"
+    },
+    "generation": {
+     "value": "current",
+     "source": "config",
+     "confidence": "high"
+    },
+    "factory": {
+     "value": "0x40f1be6faf8DAB9C143cce1a0A04c2075Fb2DF59",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "factoryVersionNote": {
+     "value": "The `deployments` block of the operator's config API: the generation their interface launches into today.",
+     "source": "config",
+     "confidence": "high"
+    },
+    "token": {
+     "value": "0xb568947298bd0b457e03bdfb6a9d55ced7bb080e",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "curve": {
+     "value": "0x3188a7de5839afdad9820ecd05a0af7edefd309d",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creator": {
+     "value": "0xcdf96609beb4a44703201aeafc2e2ca96c98656f",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorFeeRecipient": {
+     "value": "0xcdf96609beb4a44703201aeafc2e2ca96c98656f",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorVault": {
+     "value": "0xa59185d5af608cbb571ac0c4bdac21d730fef373",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "name": {
+     "value": "AnonLegion",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "symbol": {
+     "value": "ANON",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "decimals": {
+     "value": 18,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "metadataURI": {
+     "value": "ipfs://bafkreigxgutv3ds6dtj74czpobghl3waz72zk3ol2mj7h4r6fkhifc7dny",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n3"
+    },
+    "metadataDigest": {
+     "value": "0xa02f3d047655e43e2eeba9ddcb2597095d11c5a6f9c7d500e28626bbd3a307c5",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n4"
+    }
+   },
+   "timing": {
+    "deploymentBlock": {
+     "value": 116820667,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "deploymentTxHash": {
+     "value": "0x2bc378e039123d062e48aa4cdedf9cca11f7fd8d95e4d9f23395d6c3ac914f0b",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "launchTimestamp": {
+     "value": "1789034379",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n30"
+    }
+   },
+   "lifecycle": {
+    "state": {
+     "value": "CURVE_TRADING",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "transfersUnlocked": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n31"
+    },
+    "curveCompletedBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduated": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "graduationTxHash": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduationBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "poolId": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n11"
+    },
+    "poolManager": {
+     "value": "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n5"
+    }
+   },
+   "market": {
+    "quoteAsset": {
+     "value": "0x0000000000000000000000000000000000000000",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n9"
+    },
+    "quoteAssetSymbol": {
+     "value": "ETH",
+     "source": "config",
+     "confidence": "high"
+    },
+    "isQuotedLaunch": {
+     "value": false,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "quoteAssetIsMockStock": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n10"
+    },
+    "quoteAssetIsRealRobinhoodStockToken": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n6"
+    }
+   },
+   "activity": {
+    "totalTrades": {
+     "value": 2,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyCount": {
+     "value": 1,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellCount": {
+     "value": 1,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyVolumeWei": {
+     "value": "2381419565441305",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellVolumeWei": {
+     "value": "919648780154181",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "totalVolumeWei": {
+     "value": "3301068345595486",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "uniqueTraders": {
+     "value": 2,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n7"
+    }
+   },
+   "fees": {
+    "totalFeesWei": {
+     "value": "41263354319945",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "creatorFeesWei": {
+     "value": "30947515739958",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "protocolFeesWei": {
+     "value": "10315838579987",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "observedFeeBps": {
+     "value": 125,
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n24"
+    },
+    "observedCreatorShareBps": {
+     "value": 7499,
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n25"
+    },
+    "creatorFeesAccruedOnCurve": {
+     "value": "8037348751472",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "protocolFeesAccruedOnCurve": {
+     "value": "574223916355165",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "creatorFeesForwardedWei": {
+     "value": "1714634400313964",
+     "source": "onchain_event",
+     "confidence": "high"
+    }
+   },
+   "buybackBurn": {
+    "burnedToDeadAddressWei": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n32"
+    },
+    "heldForBurnInVaultWei": {
+     "value": "493098938004303934364895",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n33"
+    },
+    "totalSupplyCommittedToBurnWei": {
+     "value": "493098938004303934364895",
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n34"
+    },
+    "burnEventCount": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n12"
+    }
+   },
+   "treasuries": {
+    "projectTreasury": {
+     "value": "0xa59185d5af608cbb571ac0c4bdac21d730fef373",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n8"
+    },
+    "protocolTreasury": {
+     "value": "0x91719A47f855079678b3D5E3af69CDe2b830c5C9",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n22"
+    }
+   },
+   "provenanceSummary": {
+    "onchainEventFields": 15,
+    "contractReadFields": 11,
+    "derivedFields": 13,
+    "unavailableFields": 5
+   }
+  },
+  {
+   "key": "current:2141",
+   "identity": {
+    "launchId": {
+     "value": "2141",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n2"
+    },
+    "generation": {
+     "value": "current",
+     "source": "config",
+     "confidence": "high"
+    },
+    "factory": {
+     "value": "0x40f1be6faf8DAB9C143cce1a0A04c2075Fb2DF59",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "factoryVersionNote": {
+     "value": "The `deployments` block of the operator's config API: the generation their interface launches into today.",
+     "source": "config",
+     "confidence": "high"
+    },
+    "token": {
+     "value": "0xb875200a5d0f145fbb8411ad535138e04b00da54",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "curve": {
+     "value": "0x4e255620a3311916915568fe44b5c2137bb237e3",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creator": {
+     "value": "0x8facbdea5b8462cf3b016329b45f30fbb58d9c89",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorFeeRecipient": {
+     "value": "0x8facbdea5b8462cf3b016329b45f30fbb58d9c89",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorVault": {
+     "value": "0xed6c1c08593358d2657d0a3c06f6b389b7992daf",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "name": {
+     "value": "GoliathPulse",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "symbol": {
+     "value": "GOLI",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "decimals": {
+     "value": 18,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "metadataURI": {
+     "value": "ipfs://bafkreih32j7vrdxwt74gekavk6efodn43guaagkbcvenmggyekprsorzi4",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n3"
+    },
+    "metadataDigest": {
+     "value": "0xc0b86fc70f5a8ff1518136f9368f350e721b44daebdfb66bbbe9eaec12b912a6",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n4"
+    }
+   },
+   "timing": {
+    "deploymentBlock": {
+     "value": 116820136,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "deploymentTxHash": {
+     "value": "0x017689a24bc18abdc511ce580cf050c26b9a0cbf6318972fcb06d7a7c422b2fd",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "launchTimestamp": {
+     "value": "1789034312",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n30"
+    }
+   },
+   "lifecycle": {
+    "state": {
+     "value": "CURVE_TRADING",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "transfersUnlocked": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n31"
+    },
+    "curveCompletedBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduated": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "graduationTxHash": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduationBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "poolId": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n11"
+    },
+    "poolManager": {
+     "value": "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n5"
+    }
+   },
+   "market": {
+    "quoteAsset": {
+     "value": "0x0000000000000000000000000000000000000000",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n9"
+    },
+    "quoteAssetSymbol": {
+     "value": "ETH",
+     "source": "config",
+     "confidence": "high"
+    },
+    "isQuotedLaunch": {
+     "value": false,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "quoteAssetIsMockStock": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n10"
+    },
+    "quoteAssetIsRealRobinhoodStockToken": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n6"
+    }
+   },
+   "activity": {
+    "totalTrades": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyCount": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellCount": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "totalVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "uniqueTraders": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n7"
+    }
+   },
+   "fees": {
+    "totalFeesWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "creatorFeesWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "protocolFeesWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "observedFeeBps": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n19"
+    },
+    "observedCreatorShareBps": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n20"
+    },
+    "creatorFeesAccruedOnCurve": {
+     "value": "8756653797214",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "protocolFeesAccruedOnCurve": {
+     "value": "625614265734286",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "creatorFeesForwardedWei": {
+     "value": "1868086143405623",
+     "source": "onchain_event",
+     "confidence": "high"
+    }
+   },
+   "buybackBurn": {
+    "burnedToDeadAddressWei": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n32"
+    },
+    "heldForBurnInVaultWei": {
+     "value": "530863200399458328479253",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n33"
+    },
+    "totalSupplyCommittedToBurnWei": {
+     "value": "530863200399458328479253",
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n34"
+    },
+    "burnEventCount": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n12"
+    }
+   },
+   "treasuries": {
+    "projectTreasury": {
+     "value": "0xed6c1c08593358d2657d0a3c06f6b389b7992daf",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n8"
+    },
+    "protocolTreasury": {
+     "value": "0x91719A47f855079678b3D5E3af69CDe2b830c5C9",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n22"
+    }
+   },
+   "provenanceSummary": {
+    "onchainEventFields": 15,
+    "contractReadFields": 11,
+    "derivedFields": 11,
+    "unavailableFields": 7
+   }
+  },
+  {
+   "key": "current:2140",
+   "identity": {
+    "launchId": {
+     "value": "2140",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n2"
+    },
+    "generation": {
+     "value": "current",
+     "source": "config",
+     "confidence": "high"
+    },
+    "factory": {
+     "value": "0x40f1be6faf8DAB9C143cce1a0A04c2075Fb2DF59",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "factoryVersionNote": {
+     "value": "The `deployments` block of the operator's config API: the generation their interface launches into today.",
+     "source": "config",
+     "confidence": "high"
+    },
+    "token": {
+     "value": "0x0140bba26f9c1152a962ecca361ca35174796e48",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "curve": {
+     "value": "0x833fed4767e05d11a25ba1c49547b78fe833ca74",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creator": {
+     "value": "0xcd6c7f5c2532a61ad7ae36314db35238522a0d11",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorFeeRecipient": {
+     "value": "0xcd6c7f5c2532a61ad7ae36314db35238522a0d11",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorVault": {
+     "value": "0xd5fc14c76711674c88119a676f4176a1781cf048",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "name": {
+     "value": "MeshBridge",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "symbol": {
+     "value": "MESH",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "decimals": {
+     "value": 18,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "metadataURI": {
+     "value": "ipfs://bafkreidb35ir3prmgrtmaqt5ofgqa2urqfjwfexgx5fjjngfaamqwqhv6u",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n3"
+    },
+    "metadataDigest": {
+     "value": "0x90248e78051aa59b6acf6a609b1ebdf633a3e5ac0f95e545f827d3fe30b9802b",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n4"
+    }
+   },
+   "timing": {
+    "deploymentBlock": {
+     "value": 116820067,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "deploymentTxHash": {
+     "value": "0x4cdc2041983fd9970a5cddfa5e2376e8139c202871b842d1a262679fcd0aa714",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "launchTimestamp": {
+     "value": "1789034302",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n30"
+    }
+   },
+   "lifecycle": {
+    "state": {
+     "value": "CURVE_TRADING",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "transfersUnlocked": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n31"
+    },
+    "curveCompletedBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduated": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "graduationTxHash": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduationBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "poolId": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n11"
+    },
+    "poolManager": {
+     "value": "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n5"
+    }
+   },
+   "market": {
+    "quoteAsset": {
+     "value": "0x0000000000000000000000000000000000000000",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n9"
+    },
+    "quoteAssetSymbol": {
+     "value": "ETH",
+     "source": "config",
+     "confidence": "high"
+    },
+    "isQuotedLaunch": {
+     "value": false,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "quoteAssetIsMockStock": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n10"
+    },
+    "quoteAssetIsRealRobinhoodStockToken": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n6"
+    }
+   },
+   "activity": {
+    "totalTrades": {
+     "value": 3,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyCount": {
+     "value": 2,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellCount": {
+     "value": 1,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyVolumeWei": {
+     "value": "3503564305833283",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellVolumeWei": {
+     "value": "558596359356310",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "totalVolumeWei": {
+     "value": "4062160665189593",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "uniqueTraders": {
+     "value": 3,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n7"
+    }
+   },
+   "fees": {
+    "totalFeesWei": {
+     "value": "50777008314871",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "creatorFeesWei": {
+     "value": "38082756236152",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "protocolFeesWei": {
+     "value": "12694252078719",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "observedFeeBps": {
+     "value": 125,
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n24"
+    },
+    "observedCreatorShareBps": {
+     "value": 7499,
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n25"
+    },
+    "creatorFeesAccruedOnCurve": {
+     "value": "1154131954110",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "protocolFeesAccruedOnCurve": {
+     "value": "82456316276945",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "creatorFeesForwardedWei": {
+     "value": "246214816876704",
+     "source": "onchain_event",
+     "confidence": "high"
+    }
+   },
+   "buybackBurn": {
+    "burnedToDeadAddressWei": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n32"
+    },
+    "heldForBurnInVaultWei": {
+     "value": "72298058257915429738457",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n33"
+    },
+    "totalSupplyCommittedToBurnWei": {
+     "value": "72298058257915429738457",
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n34"
+    },
+    "burnEventCount": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n12"
+    }
+   },
+   "treasuries": {
+    "projectTreasury": {
+     "value": "0xd5fc14c76711674c88119a676f4176a1781cf048",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n8"
+    },
+    "protocolTreasury": {
+     "value": "0x91719A47f855079678b3D5E3af69CDe2b830c5C9",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n22"
+    }
+   },
+   "provenanceSummary": {
+    "onchainEventFields": 15,
+    "contractReadFields": 11,
+    "derivedFields": 13,
+    "unavailableFields": 5
+   }
+  },
+  {
+   "key": "legacy:23564",
+   "identity": {
+    "launchId": {
+     "value": "23564",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n2"
+    },
+    "generation": {
+     "value": "legacy",
+     "source": "config",
+     "confidence": "high"
+    },
+    "factory": {
+     "value": "0xB5B7A2f6c4EAFa2D73918fcA32d50e2126339eb9",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "factoryVersionNote": {
+     "value": "Filed under `legacyPublicGraphs`. Largest generation by launch count. Fee economics match the current generation; graduation parameters were not independently verified.",
+     "source": "config",
+     "confidence": "high"
+    },
+    "token": {
+     "value": "0x55b8708b4588722d473f3a832c01fdaa4f58d3da",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "curve": {
+     "value": "0xcb611b79b4fa6dd3b9a27c79dc6a5ed5eb6c79d2",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creator": {
+     "value": "0xce851d0aef8b7000f14bc8ffb2d0166de9f046f8",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorFeeRecipient": {
+     "value": "0xce851d0aef8b7000f14bc8ffb2d0166de9f046f8",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorVault": {
+     "value": "0xf9c757a4e84f615146e5a93026c41a2959a56f7e",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "name": {
+     "value": "Server Down",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "symbol": {
+     "value": "DDOS",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "decimals": {
+     "value": 18,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "metadataURI": {
+     "value": "ipfs://bafkreib26yrp6d7zwihlxyyp7rekdu3uql6wvybajtsuaepkbilx62ujfa",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n3"
+    },
+    "metadataDigest": {
+     "value": "0xbf3585ad331ebf83cf8131402a5c40beda325a60801f4d86f71fd1138a9a2bc7",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n4"
+    }
+   },
+   "timing": {
+    "deploymentBlock": {
+     "value": 113437808,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "deploymentTxHash": {
+     "value": "0x0e9fdc89f3bb25b349f132b3ff02ff54fd62138a107b9c4fbbe3fd6df2c5b3a9",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "launchTimestamp": {
+     "value": "1788608498",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n30"
+    }
+   },
+   "lifecycle": {
+    "state": {
+     "value": "CURVE_TRADING",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "transfersUnlocked": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n31"
+    },
+    "curveCompletedBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduated": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "graduationTxHash": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduationBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "poolId": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n11"
+    },
+    "poolManager": {
+     "value": "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n5"
+    }
+   },
+   "market": {
+    "quoteAsset": {
+     "value": "0x0000000000000000000000000000000000000000",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n9"
+    },
+    "quoteAssetSymbol": {
+     "value": "ETH",
+     "source": "config",
+     "confidence": "high"
+    },
+    "isQuotedLaunch": {
+     "value": false,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "quoteAssetIsMockStock": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n10"
+    },
+    "quoteAssetIsRealRobinhoodStockToken": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n6"
+    }
+   },
+   "activity": {
+    "totalTrades": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyCount": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellCount": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "totalVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "uniqueTraders": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n7"
+    }
+   },
+   "fees": {
+    "totalFeesWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "creatorFeesWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "protocolFeesWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "observedFeeBps": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n19"
+    },
+    "observedCreatorShareBps": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n20"
+    },
+    "creatorFeesAccruedOnCurve": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "protocolFeesAccruedOnCurve": {
+     "value": "571832275342601",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "creatorFeesForwardedWei": {
+     "value": "8003873216304",
+     "source": "onchain_event",
+     "confidence": "high"
+    }
+   },
+   "buybackBurn": {
+    "burnedToDeadAddressWei": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n32"
+    },
+    "heldForBurnInVaultWei": {
+     "value": "503862379353060350714646",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n33"
+    },
+    "totalSupplyCommittedToBurnWei": {
+     "value": "503862379353060350714646",
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n34"
+    },
+    "burnEventCount": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n12"
+    }
+   },
+   "treasuries": {
+    "projectTreasury": {
+     "value": "0xf9c757a4e84f615146e5a93026c41a2959a56f7e",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n8"
+    },
+    "protocolTreasury": {
+     "value": "0x29b1B6031df02D68332502FBD39Aee874dE24e03",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n21"
+    }
+   },
+   "provenanceSummary": {
+    "onchainEventFields": 15,
+    "contractReadFields": 11,
+    "derivedFields": 11,
+    "unavailableFields": 7
+   }
+  },
+  {
+   "key": "legacy:23552",
+   "identity": {
+    "launchId": {
+     "value": "23552",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n2"
+    },
+    "generation": {
+     "value": "legacy",
+     "source": "config",
+     "confidence": "high"
+    },
+    "factory": {
+     "value": "0xB5B7A2f6c4EAFa2D73918fcA32d50e2126339eb9",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "factoryVersionNote": {
+     "value": "Filed under `legacyPublicGraphs`. Largest generation by launch count. Fee economics match the current generation; graduation parameters were not independently verified.",
+     "source": "config",
+     "confidence": "high"
+    },
+    "token": {
+     "value": "0x14cf3ad3ce1ba4e4d5db4025a650436be85b0087",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "curve": {
+     "value": "0xdf333dd20897cbe09c1eaa08dc949b3ba960d383",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creator": {
+     "value": "0xbe107a7794b3c6733ad7b6e8e6adec2b4b516d9d",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorFeeRecipient": {
+     "value": "0xbe107a7794b3c6733ad7b6e8e6adec2b4b516d9d",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorVault": {
+     "value": "0x11acac92ee008d7daa15a9e94e9735e3f3327a00",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "name": {
+     "value": "404",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "symbol": {
+     "value": "404",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "decimals": {
+     "value": 18,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "metadataURI": {
+     "value": "ipfs://bafkreidaasphaebjtfq6imlg2nm34sj24ay32t7jttbumumivngmf2il4u",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n3"
+    },
+    "metadataDigest": {
+     "value": "0x94519a4f53f298b7f9f51634e33a1d04c1484ec969c826da072b4ececdf8d9bc",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n4"
+    }
+   },
+   "timing": {
+    "deploymentBlock": {
+     "value": 113433075,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "deploymentTxHash": {
+     "value": "0x15c182be934f0ae8827f489216eb827267edffcba7283388a22e25b0ddd5db6f",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "launchTimestamp": {
+     "value": "1788607897",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n30"
+    }
+   },
+   "lifecycle": {
+    "state": {
+     "value": "CURVE_TRADING",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "transfersUnlocked": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n31"
+    },
+    "curveCompletedBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduated": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "graduationTxHash": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduationBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "poolId": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n11"
+    },
+    "poolManager": {
+     "value": "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n5"
+    }
+   },
+   "market": {
+    "quoteAsset": {
+     "value": "0x0000000000000000000000000000000000000000",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n9"
+    },
+    "quoteAssetSymbol": {
+     "value": "ETH",
+     "source": "config",
+     "confidence": "high"
+    },
+    "isQuotedLaunch": {
+     "value": false,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "quoteAssetIsMockStock": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n10"
+    },
+    "quoteAssetIsRealRobinhoodStockToken": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n6"
+    }
+   },
+   "activity": {
+    "totalTrades": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyCount": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellCount": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "totalVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "uniqueTraders": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n7"
+    }
+   },
+   "fees": {
+    "totalFeesWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "creatorFeesWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "protocolFeesWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "observedFeeBps": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n19"
+    },
+    "observedCreatorShareBps": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n20"
+    },
+    "creatorFeesAccruedOnCurve": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "protocolFeesAccruedOnCurve": {
+     "value": "809788208928396",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "creatorFeesForwardedWei": {
+     "value": "11334516143632",
+     "source": "onchain_event",
+     "confidence": "high"
+    }
+   },
+   "buybackBurn": {
+    "burnedToDeadAddressWei": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n32"
+    },
+    "heldForBurnInVaultWei": {
+     "value": "706725681541555821451368",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n33"
+    },
+    "totalSupplyCommittedToBurnWei": {
+     "value": "706725681541555821451368",
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n34"
+    },
+    "burnEventCount": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n12"
+    }
+   },
+   "treasuries": {
+    "projectTreasury": {
+     "value": "0x11acac92ee008d7daa15a9e94e9735e3f3327a00",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n8"
+    },
+    "protocolTreasury": {
+     "value": "0x29b1B6031df02D68332502FBD39Aee874dE24e03",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n21"
+    }
+   },
+   "provenanceSummary": {
+    "onchainEventFields": 15,
+    "contractReadFields": 11,
+    "derivedFields": 11,
+    "unavailableFields": 7
+   }
+  },
+  {
+   "key": "legacy:20300",
+   "identity": {
+    "launchId": {
+     "value": "20300",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n2"
+    },
+    "generation": {
+     "value": "legacy",
+     "source": "config",
+     "confidence": "high"
+    },
+    "factory": {
+     "value": "0xB5B7A2f6c4EAFa2D73918fcA32d50e2126339eb9",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "factoryVersionNote": {
+     "value": "Filed under `legacyPublicGraphs`. Largest generation by launch count. Fee economics match the current generation; graduation parameters were not independently verified.",
+     "source": "config",
+     "confidence": "high"
+    },
+    "token": {
+     "value": "0xe3a72e13932271a68875bd306b59147ecae06312",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "curve": {
+     "value": "0x51d13d0af4fa0e0ba0ed2c1672beb39bf61186e2",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creator": {
+     "value": "0x02c7333db8e9086d0facf5b9364e4ba929d0c9b6",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorFeeRecipient": {
+     "value": "0x02c7333db8e9086d0facf5b9364e4ba929d0c9b6",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorVault": {
+     "value": "0x453c6db5a4c5d3a560e407c1649acbf86862a303",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "name": {
+     "value": "FLORK",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "symbol": {
+     "value": "FLORK",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "decimals": {
+     "value": 18,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "metadataURI": {
+     "value": "ipfs://bafkreihobqgr6ne3rro3lb72i6wa6wb4tclbjyxmwgrfnkbk3lyw6svmny",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n3"
+    },
+    "metadataDigest": {
+     "value": "0x7cccb435c01bcaadeb203d556d6c9c28becdecf7602dca492c7d354390edd9e5",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n4"
+    }
+   },
+   "timing": {
+    "deploymentBlock": {
+     "value": 112811870,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "deploymentTxHash": {
+     "value": "0x0201ee17cd9d2b1b2dec4ec96e3831c00986d6f178216bbfcf249c876025cd4a",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "launchTimestamp": {
+     "value": "1788521867",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n30"
+    }
+   },
+   "lifecycle": {
+    "state": {
+     "value": "CURVE_TRADING",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "transfersUnlocked": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n31"
+    },
+    "curveCompletedBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduated": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "graduationTxHash": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduationBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "poolId": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n11"
+    },
+    "poolManager": {
+     "value": "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n5"
+    }
+   },
+   "market": {
+    "quoteAsset": {
+     "value": "0x0000000000000000000000000000000000000000",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n9"
+    },
+    "quoteAssetSymbol": {
+     "value": "ETH",
+     "source": "config",
+     "confidence": "high"
+    },
+    "isQuotedLaunch": {
+     "value": false,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "quoteAssetIsMockStock": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n10"
+    },
+    "quoteAssetIsRealRobinhoodStockToken": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n6"
+    }
+   },
+   "activity": {
+    "totalTrades": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyCount": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellCount": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "totalVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "uniqueTraders": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n7"
+    }
+   },
+   "fees": {
+    "totalFeesWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "creatorFeesWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "protocolFeesWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "observedFeeBps": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n19"
+    },
+    "observedCreatorShareBps": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n20"
+    },
+    "creatorFeesAccruedOnCurve": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "protocolFeesAccruedOnCurve": {
+     "value": "521717366642328",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "creatorFeesForwardedWei": {
+     "value": "6640834058757",
+     "source": "onchain_event",
+     "confidence": "high"
+    }
+   },
+   "buybackBurn": {
+    "burnedToDeadAddressWei": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n32"
+    },
+    "heldForBurnInVaultWei": {
+     "value": "440603048295248011787644",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n33"
+    },
+    "totalSupplyCommittedToBurnWei": {
+     "value": "440603048295248011787644",
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n34"
+    },
+    "burnEventCount": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n12"
+    }
+   },
+   "treasuries": {
+    "projectTreasury": {
+     "value": "0x453c6db5a4c5d3a560e407c1649acbf86862a303",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n8"
+    },
+    "protocolTreasury": {
+     "value": "0x29b1B6031df02D68332502FBD39Aee874dE24e03",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n21"
+    }
+   },
+   "provenanceSummary": {
+    "onchainEventFields": 15,
+    "contractReadFields": 11,
+    "derivedFields": 11,
+    "unavailableFields": 7
+   }
+  },
+  {
+   "key": "legacy:9535",
+   "identity": {
+    "launchId": {
+     "value": "9535",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n2"
+    },
+    "generation": {
+     "value": "legacy",
+     "source": "config",
+     "confidence": "high"
+    },
+    "factory": {
+     "value": "0xB5B7A2f6c4EAFa2D73918fcA32d50e2126339eb9",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "factoryVersionNote": {
+     "value": "Filed under `legacyPublicGraphs`. Largest generation by launch count. Fee economics match the current generation; graduation parameters were not independently verified.",
+     "source": "config",
+     "confidence": "high"
+    },
+    "token": {
+     "value": "0x2a3d4a1b88f8782644e29dba724c3a10facd6cd7",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "curve": {
+     "value": "0x68b0c1051a683e97cc556b748ec9342de5312706",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creator": {
+     "value": "0x1bf9d6128b417545dc81d20df3423f9326079f15",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorFeeRecipient": {
+     "value": "0x1bf9d6128b417545dc81d20df3423f9326079f15",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorVault": {
+     "value": "0xa26cc132370714558a119c6749dd6bc83a1dd2be",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "name": {
+     "value": "error",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "symbol": {
+     "value": "404",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "decimals": {
+     "value": 18,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "metadataURI": {
+     "value": "ipfs://bafkreibfyqalpjzseeaytwyibblxczrhgqwpmqzrurejz7hwr4qjjff2fe",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n3"
+    },
+    "metadataDigest": {
+     "value": "0x202f64fb843f3c2a1f30d8b2229e2e0172fada78634e3c6002d24009193b053b",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n4"
+    }
+   },
+   "timing": {
+    "deploymentBlock": {
+     "value": 111089742,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "deploymentTxHash": {
+     "value": "0x7d358e5b3527deeee1372134ffa3ffbaeb3b57c23c87718018dfdbbb6bd233fd",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "launchTimestamp": {
+     "value": "1788256760",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n30"
+    }
+   },
+   "lifecycle": {
+    "state": {
+     "value": "GRADUATED",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "transfersUnlocked": {
+     "value": true,
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n31"
+    },
+    "curveCompletedBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduated": {
+     "value": true,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "graduationTxHash": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduationBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "poolId": {
+     "value": "0x6bffbc236d05765bcfeaf2cfbf894bd48742e197d670b6726b0dcaa61a9700f1",
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "poolManager": {
+     "value": "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n5"
+    }
+   },
+   "market": {
+    "quoteAsset": {
+     "value": "0x0000000000000000000000000000000000000000",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n9"
+    },
+    "quoteAssetSymbol": {
+     "value": "ETH",
+     "source": "config",
+     "confidence": "high"
+    },
+    "isQuotedLaunch": {
+     "value": false,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "quoteAssetIsMockStock": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n10"
+    },
+    "quoteAssetIsRealRobinhoodStockToken": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n6"
+    }
+   },
+   "activity": {
+    "totalTrades": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyCount": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellCount": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "totalVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "uniqueTraders": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n7"
+    }
+   },
+   "fees": {
+    "totalFeesWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "creatorFeesWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "protocolFeesWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "observedFeeBps": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n19"
+    },
+    "observedCreatorShareBps": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n20"
+    },
+    "creatorFeesAccruedOnCurve": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "protocolFeesAccruedOnCurve": {
+     "value": "20237967561757061",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "creatorFeesForwardedWei": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    }
+   },
+   "buybackBurn": {
+    "burnedToDeadAddressWei": {
+     "value": "13390191517652057674633",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n32"
+    },
+    "heldForBurnInVaultWei": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n33"
+    },
+    "totalSupplyCommittedToBurnWei": {
+     "value": "13390191517652057674633",
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n34"
+    },
+    "burnEventCount": {
+     "value": 1,
+     "source": "derived",
+     "confidence": "medium",
+     "note": "Transfer->dEaD logs over blocks 116855856..118855856"
+    }
+   },
+   "treasuries": {
+    "projectTreasury": {
+     "value": "0xa26cc132370714558a119c6749dd6bc83a1dd2be",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n8"
+    },
+    "protocolTreasury": {
+     "value": "0x29b1B6031df02D68332502FBD39Aee874dE24e03",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n21"
+    }
+   },
+   "provenanceSummary": {
+    "onchainEventFields": 14,
+    "contractReadFields": 12,
+    "derivedFields": 12,
+    "unavailableFields": 6
+   }
+  },
+  {
+   "key": "current:269",
+   "identity": {
+    "launchId": {
+     "value": "269",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n2"
+    },
+    "generation": {
+     "value": "current",
+     "source": "config",
+     "confidence": "high"
+    },
+    "factory": {
+     "value": "0x40f1be6faf8DAB9C143cce1a0A04c2075Fb2DF59",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "factoryVersionNote": {
+     "value": "The `deployments` block of the operator's config API: the generation their interface launches into today.",
+     "source": "config",
+     "confidence": "high"
+    },
+    "token": {
+     "value": "0x0dca868d08971ebdde344b7797f67ff230bf0ba3",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "curve": {
+     "value": "0xa2fc8b3ef390a00cbee6433a13dcf8608bedd5c2",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creator": {
+     "value": "0x5475d97f06e0baa099798561496803921c53acfd",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorFeeRecipient": {
+     "value": "0x5475d97f06e0baa099798561496803921c53acfd",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorVault": {
+     "value": "0x1090365f6a5bd0d115df975830125d9f87cf8b97",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "name": {
+     "value": "sync/core",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "symbol": {
+     "value": "SCC",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "decimals": {
+     "value": 18,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "metadataURI": {
+     "value": "ipfs://bafkreibifpqyrgyrsvzuacmagl45zuvr6e2b6rbnchftthhwfcmk2vpxmu",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n3"
+    },
+    "metadataDigest": {
+     "value": "0x601a5916787edeee84aa9d44f47b46160d3f26c6daf18ae41cf6b65896544275",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n4"
+    }
+   },
+   "timing": {
+    "deploymentBlock": {
+     "value": 116388241,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "deploymentTxHash": {
+     "value": "0x6422dfd183d9ef49f61f163a1f8387a1e3b16df44e63368cef9eb61c0eef96c7",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "launchTimestamp": {
+     "value": "1788978365",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n30"
+    }
+   },
+   "lifecycle": {
+    "state": {
+     "value": "GRADUATED",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "transfersUnlocked": {
+     "value": true,
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n31"
+    },
+    "curveCompletedBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduated": {
+     "value": true,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "graduationTxHash": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduationBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "poolId": {
+     "value": "0xf9272fe29d59833086888c480ab2ec878ad81f5aa6eed48e832b47d8cc1a101c",
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "poolManager": {
+     "value": "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n5"
+    }
+   },
+   "market": {
+    "quoteAsset": {
+     "value": "0x0000000000000000000000000000000000000000",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n9"
+    },
+    "quoteAssetSymbol": {
+     "value": "ETH",
+     "source": "config",
+     "confidence": "high"
+    },
+    "isQuotedLaunch": {
+     "value": false,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "quoteAssetIsMockStock": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n10"
+    },
+    "quoteAssetIsRealRobinhoodStockToken": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n6"
+    }
+   },
+   "activity": {
+    "totalTrades": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyCount": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellCount": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "totalVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "uniqueTraders": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n7"
+    }
+   },
+   "fees": {
+    "totalFeesWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "creatorFeesWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "protocolFeesWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "observedFeeBps": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n19"
+    },
+    "observedCreatorShareBps": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n20"
+    },
+    "creatorFeesAccruedOnCurve": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "protocolFeesAccruedOnCurve": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "creatorFeesForwardedWei": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    }
+   },
+   "buybackBurn": {
+    "burnedToDeadAddressWei": {
+     "value": "2709706287342883296147423",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n32"
+    },
+    "heldForBurnInVaultWei": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n33"
+    },
+    "totalSupplyCommittedToBurnWei": {
+     "value": "2709706287342883296147423",
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n34"
+    },
+    "burnEventCount": {
+     "value": 2,
+     "source": "derived",
+     "confidence": "medium",
+     "note": "Transfer->dEaD logs over blocks 116855856..118855856"
+    }
+   },
+   "treasuries": {
+    "projectTreasury": {
+     "value": "0x1090365f6a5bd0d115df975830125d9f87cf8b97",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n8"
+    },
+    "protocolTreasury": {
+     "value": "0x91719A47f855079678b3D5E3af69CDe2b830c5C9",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n22"
+    }
+   },
+   "provenanceSummary": {
+    "onchainEventFields": 14,
+    "contractReadFields": 12,
+    "derivedFields": 12,
+    "unavailableFields": 6
+   }
+  },
+  {
+   "key": "current:20183",
+   "identity": {
+    "launchId": {
+     "value": "20183",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n2"
+    },
+    "generation": {
+     "value": "current",
+     "source": "config",
+     "confidence": "high"
+    },
+    "factory": {
+     "value": "0x40f1be6faf8DAB9C143cce1a0A04c2075Fb2DF59",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "factoryVersionNote": {
+     "value": "The `deployments` block of the operator's config API: the generation their interface launches into today.",
+     "source": "config",
+     "confidence": "high"
+    },
+    "token": {
+     "value": "0x52cd0d3201c005900b8f7703fd0c4fa75f8852e6",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "curve": {
+     "value": "0xf6b60ed13d704dc25aed9b3280ca7e5787771b05",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creator": {
+     "value": "0xc7d3577030a5e46f990b948491baf989b602eb09",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorFeeRecipient": {
+     "value": "0xc7d3577030a5e46f990b948491baf989b602eb09",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorVault": {
+     "value": "0xf3642298cd3bcb6d4e419c98e09d3a91b50f8908",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "name": {
+     "value": "KLOBI",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "symbol": {
+     "value": "KLOBI",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "decimals": {
+     "value": 18,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "metadataURI": {
+     "value": "ipfs://bafkreieo62b24nrgjfyxb7d4eedchbout4wmt4bmjmvm62eag72wwsml34",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n3"
+    },
+    "metadataDigest": {
+     "value": "0xddc715e4560957fe0114bd934ef721b8a0ef295512cdd51abc74835506713a04",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n4"
+    }
+   },
+   "timing": {
+    "deploymentBlock": {
+     "value": 118789582,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "deploymentTxHash": {
+     "value": "0x5d1cb587689774cca9428b5031b41d2c0612e985ceb861f5f611a5730c9ea885",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "launchTimestamp": {
+     "value": "1789311477",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n30"
+    }
+   },
+   "lifecycle": {
+    "state": {
+     "value": "CURVE_TRADING",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "transfersUnlocked": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n31"
+    },
+    "curveCompletedBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduated": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "graduationTxHash": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduationBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "poolId": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n11"
+    },
+    "poolManager": {
+     "value": "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n5"
+    }
+   },
+   "market": {
+    "quoteAsset": {
+     "value": "0x0000000000000000000000000000000000000000",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n9"
+    },
+    "quoteAssetSymbol": {
+     "value": "ETH",
+     "source": "config",
+     "confidence": "high"
+    },
+    "isQuotedLaunch": {
+     "value": false,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "quoteAssetIsMockStock": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n10"
+    },
+    "quoteAssetIsRealRobinhoodStockToken": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n6"
+    }
+   },
+   "activity": {
+    "totalTrades": {
+     "value": 8,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyCount": {
+     "value": 7,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellCount": {
+     "value": 1,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyVolumeWei": {
+     "value": "52906429875516768",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellVolumeWei": {
+     "value": "2482280182200707",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "totalVolumeWei": {
+     "value": "55388710057717475",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "uniqueTraders": {
+     "value": 3,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n7"
+    }
+   },
+   "fees": {
+    "totalFeesWei": {
+     "value": "692358875721469",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "creatorFeesWei": {
+     "value": "519269156791100",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "protocolFeesWei": {
+     "value": "173089718930369",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "observedFeeBps": {
+     "value": 125,
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n24"
+    },
+    "observedCreatorShareBps": {
+     "value": 7499,
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n25"
+    },
+    "creatorFeesAccruedOnCurve": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "protocolFeesAccruedOnCurve": {
+     "value": "173089718930369",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "creatorFeesForwardedWei": {
+     "value": "519269156791100",
+     "source": "onchain_event",
+     "confidence": "high"
+    }
+   },
+   "buybackBurn": {
+    "burnedToDeadAddressWei": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n32"
+    },
+    "heldForBurnInVaultWei": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n33"
+    },
+    "totalSupplyCommittedToBurnWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n34"
+    },
+    "burnEventCount": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n12"
+    }
+   },
+   "treasuries": {
+    "projectTreasury": {
+     "value": "0xf3642298cd3bcb6d4e419c98e09d3a91b50f8908",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n8"
+    },
+    "protocolTreasury": {
+     "value": "0x91719A47f855079678b3D5E3af69CDe2b830c5C9",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n22"
+    }
+   },
+   "provenanceSummary": {
+    "onchainEventFields": 15,
+    "contractReadFields": 11,
+    "derivedFields": 13,
+    "unavailableFields": 5
+   }
+  },
+  {
+   "key": "current:19948",
+   "identity": {
+    "launchId": {
+     "value": "19948",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n2"
+    },
+    "generation": {
+     "value": "current",
+     "source": "config",
+     "confidence": "high"
+    },
+    "factory": {
+     "value": "0x40f1be6faf8DAB9C143cce1a0A04c2075Fb2DF59",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "factoryVersionNote": {
+     "value": "The `deployments` block of the operator's config API: the generation their interface launches into today.",
+     "source": "config",
+     "confidence": "high"
+    },
+    "token": {
+     "value": "0x0547d1bfbf27c2d1641cd141995b3f83cbdb7e1b",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "curve": {
+     "value": "0xc64e6341c223fa99be5d70ebfed80003ec7d0846",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creator": {
+     "value": "0x885c327f1bbf28b7c3180406250baeeac08efd39",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorFeeRecipient": {
+     "value": "0x885c327f1bbf28b7c3180406250baeeac08efd39",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorVault": {
+     "value": "0xea3955219dc051fe7d819e9dab55bd1b1a02724d",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "name": {
+     "value": "APACHE",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "symbol": {
+     "value": "APACHE",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "decimals": {
+     "value": 18,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "metadataURI": {
+     "value": "ipfs://bafkreignwbe4swgcg5uuqu5tkezajwlhzjdhqysfjovvk3cuzx7pxu5xi4",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n3"
+    },
+    "metadataDigest": {
+     "value": "0xfb7532a4063e8f3379d1a202a15fd5eea1ee0a46d5fe9c9a0240ee7d9d3dd26b",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n4"
+    }
+   },
+   "timing": {
+    "deploymentBlock": {
+     "value": 118780067,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "deploymentTxHash": {
+     "value": "0x7f6a314988b9b5911cfbba4f2b28b645122ab9ae5d72239967cc21e291edbb29",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "launchTimestamp": {
+     "value": "1789310057",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n30"
+    }
+   },
+   "lifecycle": {
+    "state": {
+     "value": "CURVE_TRADING",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "transfersUnlocked": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n31"
+    },
+    "curveCompletedBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduated": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "graduationTxHash": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduationBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "poolId": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n11"
+    },
+    "poolManager": {
+     "value": "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n5"
+    }
+   },
+   "market": {
+    "quoteAsset": {
+     "value": "0x0000000000000000000000000000000000000000",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n9"
+    },
+    "quoteAssetSymbol": {
+     "value": "ETH",
+     "source": "config",
+     "confidence": "high"
+    },
+    "isQuotedLaunch": {
+     "value": false,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "quoteAssetIsMockStock": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n10"
+    },
+    "quoteAssetIsRealRobinhoodStockToken": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n6"
+    }
+   },
+   "activity": {
+    "totalTrades": {
+     "value": 11,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyCount": {
+     "value": 9,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellCount": {
+     "value": 2,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyVolumeWei": {
+     "value": "53814663941323133",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellVolumeWei": {
+     "value": "3653749999999998",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "totalVolumeWei": {
+     "value": "57468413941323131",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "uniqueTraders": {
+     "value": 9,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n7"
+    }
+   },
+   "fees": {
+    "totalFeesWei": {
+     "value": "718355174266540",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "creatorFeesWei": {
+     "value": "538766380699904",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "protocolFeesWei": {
+     "value": "179588793566636",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "observedFeeBps": {
+     "value": 125,
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n24"
+    },
+    "observedCreatorShareBps": {
+     "value": 7499,
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n25"
+    },
+    "creatorFeesAccruedOnCurve": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "protocolFeesAccruedOnCurve": {
+     "value": "179588793566636",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "creatorFeesForwardedWei": {
+     "value": "538766380699904",
+     "source": "onchain_event",
+     "confidence": "high"
+    }
+   },
+   "buybackBurn": {
+    "burnedToDeadAddressWei": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n32"
+    },
+    "heldForBurnInVaultWei": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n33"
+    },
+    "totalSupplyCommittedToBurnWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n34"
+    },
+    "burnEventCount": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n12"
+    }
+   },
+   "treasuries": {
+    "projectTreasury": {
+     "value": "0xea3955219dc051fe7d819e9dab55bd1b1a02724d",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n8"
+    },
+    "protocolTreasury": {
+     "value": "0x91719A47f855079678b3D5E3af69CDe2b830c5C9",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n22"
+    }
+   },
+   "provenanceSummary": {
+    "onchainEventFields": 15,
+    "contractReadFields": 11,
+    "derivedFields": 13,
+    "unavailableFields": 5
+   }
+  },
+  {
+   "key": "legacy:25483",
+   "identity": {
+    "launchId": {
+     "value": "25483",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n2"
+    },
+    "generation": {
+     "value": "legacy",
+     "source": "config",
+     "confidence": "high"
+    },
+    "factory": {
+     "value": "0xB5B7A2f6c4EAFa2D73918fcA32d50e2126339eb9",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "factoryVersionNote": {
+     "value": "Filed under `legacyPublicGraphs`. Largest generation by launch count. Fee economics match the current generation; graduation parameters were not independently verified.",
+     "source": "config",
+     "confidence": "high"
+    },
+    "token": {
+     "value": "0x021cf23ae2f54c72cf93d97b01aabb4576832734",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "curve": {
+     "value": "0x09e4c23e35c4ac0f4d4532ed07733c64731fcfd4",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creator": {
+     "value": "0x9fa9b283cd8147700afc10b1cb72f090226213e5",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorFeeRecipient": {
+     "value": "0x9fa9b283cd8147700afc10b1cb72f090226213e5",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "creatorVault": {
+     "value": "0x4ce7908eaa1f425c50ebef32bb0267f0daf83da6",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "name": {
+     "value": "Alchemist",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "symbol": {
+     "value": "ACM",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "decimals": {
+     "value": 18,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "metadataURI": {
+     "value": "ipfs://bafkreifa34kj4tjzhefyads2e3lom73rfs23isglap2d7zkcxrb6zonhky",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n3"
+    },
+    "metadataDigest": {
+     "value": "0x33e4f0ed5374e5ca2078f1bcbb012a27a102308f576e731f051204535bf31804",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n4"
+    }
+   },
+   "timing": {
+    "deploymentBlock": {
+     "value": 113618233,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "deploymentTxHash": {
+     "value": "0x015216d4ccd7d39e08dde3b9ecf6743ebcd19738fa3036c0272c9c9a23a70254",
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "launchTimestamp": {
+     "value": "1788633135",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n30"
+    }
+   },
+   "lifecycle": {
+    "state": {
+     "value": "CURVE_TRADING",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n28"
+    },
+    "transfersUnlocked": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n31"
+    },
+    "curveCompletedBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduated": {
+     "value": false,
+     "source": "contract_read",
+     "confidence": "high"
+    },
+    "graduationTxHash": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "graduationBlock": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n0"
+    },
+    "poolId": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n11"
+    },
+    "poolManager": {
+     "value": "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n5"
+    }
+   },
+   "market": {
+    "quoteAsset": {
+     "value": "0x0000000000000000000000000000000000000000",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n9"
+    },
+    "quoteAssetSymbol": {
+     "value": "ETH",
+     "source": "config",
+     "confidence": "high"
+    },
+    "isQuotedLaunch": {
+     "value": false,
+     "source": "onchain_event",
+     "confidence": "high"
+    },
+    "quoteAssetIsMockStock": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n10"
+    },
+    "quoteAssetIsRealRobinhoodStockToken": {
+     "value": false,
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n6"
+    }
+   },
+   "activity": {
+    "totalTrades": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyCount": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellCount": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "buyVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "sellVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "totalVolumeWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "uniqueTraders": {
+     "value": 0,
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n7"
+    }
+   },
+   "fees": {
+    "totalFeesWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "creatorFeesWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "protocolFeesWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "medium",
+     "noteCode": "n0"
+    },
+    "observedFeeBps": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n19"
+    },
+    "observedCreatorShareBps": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n20"
+    },
+    "creatorFeesAccruedOnCurve": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "protocolFeesAccruedOnCurve": {
+     "value": "235345653501675",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n29"
+    },
+    "creatorFeesForwardedWei": {
+     "value": "316482226130025",
+     "source": "onchain_event",
+     "confidence": "high"
+    }
+   },
+   "buybackBurn": {
+    "burnedToDeadAddressWei": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n32"
+    },
+    "heldForBurnInVaultWei": {
+     "value": "0",
+     "source": "contract_read",
+     "confidence": "high",
+     "noteCode": "n33"
+    },
+    "totalSupplyCommittedToBurnWei": {
+     "value": "0",
+     "source": "derived",
+     "confidence": "high",
+     "noteCode": "n34"
+    },
+    "burnEventCount": {
+     "value": null,
+     "source": "unavailable",
+     "confidence": "none",
+     "noteCode": "n12"
+    }
+   },
+   "treasuries": {
+    "projectTreasury": {
+     "value": "0x4ce7908eaa1f425c50ebef32bb0267f0daf83da6",
+     "source": "onchain_event",
+     "confidence": "high",
+     "noteCode": "n8"
+    },
+    "protocolTreasury": {
+     "value": "0x29b1B6031df02D68332502FBD39Aee874dE24e03",
+     "source": "config",
+     "confidence": "high",
+     "noteCode": "n21"
+    }
+   },
+   "provenanceSummary": {
+    "onchainEventFields": 15,
+    "contractReadFields": 11,
+    "derivedFields": 11,
+    "unavailableFields": 7
+   }
+  }
+ ],
+ "_STALE_CONFIDENCE_DISCLOSURE": {
+  "field": "buybackBurn.totalSupplyCommittedToBurnWei",
+  "inThisSample": "confidence: \"high\", no note",
+  "inCurrentCode": "confidence: \"medium\", with a note stating the assumption",
+  "why": "These records were generated on 2026-09-13T17:38:28.126Z, before the confidence downgrade. They have deliberately NOT been hand-edited or regenerated: rewriting generated output by hand would make this sample a fabrication rather than a record of a real run.",
+  "whatChanged": "The arithmetic is unchanged and remains balanceOf(0x...dEaD) + balanceOf(creatorVault). Only the stated confidence changed. The sum is exact, but attributing the entire vault balance to buyback origin is an assumption: no mechanism was identified that prevents an unrelated inbound transfer to a vault, and after graduation transfersUnlocked() is true, so any holder can send the launch token to any address including the vault.",
+  "howToReadThisSample": "Treat totalSupplyCommittedToBurnWei here as an UPPER BOUND on supply committed to burn, not a measured quantity, exactly as a current run would tell you via confidence and note. See docs/known-limitations.md section 8.",
+  "regenerate": "npm run index -- --emit-bulk"
+ },
+ "_SAMPLE_IS_HISTORICAL": {
+  "thisSampleWasCapturedAt": "2026-09-13T17:38:28.126Z",
+  "thisSampleHeadBlock": 118855856,
+  "thisSampleTotalLaunches": 77226,
+  "latestValidationRun": {
+   "date": "2026-09-17",
+   "headBlock": 120708793,
+   "totalLaunches": 96398,
+   "perGeneration": {
+    "retired": 14799,
+    "legacy": 42946,
+    "current": 38653
+   }
+  },
+  "why": "These are real records from a real run on 2026-09-13. They were NOT regenerated for the 2026-09-17 validation run, because the committed sample is a curated 14-record selection chosen to demonstrate specific accounting traps, and no script in this repository reproduces that selection. Regenerating it would have meant hand-authoring the selection, which is worse than shipping a clearly labelled historical sample.",
+  "howToRead": "Use this sample to understand the RECORD SHAPE and the provenance model. Do not use its totals as current: the chain is live and has produced roughly 19,000 more launches since. See the 'Latest validation run' section of README.md, or re-run the indexer.",
+  "regenerate": "npm run index -- --enrich-limit 800 --trade-window 200000 --burn-window 2000000 --compare-api"
+ }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "vibevibe-testnet-indexer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Unofficial, community-built research indexer for the Vibe/Vibe deployment on Robinhood Chain testnet (chain 46630). Read-only. Not affiliated with Vibe/Vibe, Seedify, Robinhood or Robinhood Chain.",
+  "license": "MIT",
+  "keywords": [
+    "robinhood-chain",
+    "testnet",
+    "indexer",
+    "evm",
+    "research",
+    "read-only"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "index": "tsx src/cli.ts",
+    "index:quick": "tsx src/cli.ts --enrich-limit 300 --trade-window 60000 --burn-window 60000",
+    "test": "tsx --test test/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "check:burn-model": "tsx scripts/verify-burn-model.mjs",
+    "check:api-coverage": "tsx scripts/check-api-coverage.mjs",
+    "help": "tsx src/cli.ts --help"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "viem": "^2.56.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.5.1",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2"
+  }
+}
