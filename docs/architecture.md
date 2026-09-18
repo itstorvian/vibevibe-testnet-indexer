@@ -35,7 +35,8 @@ stage 2  trades       Bought / Sold / CurveCompleted / Graduated / CreatorFeesFo
                       via topic-only queries across all addresses
 stage 3  burns        Transfer -> 0x...dEaD, then per-launch CreatorVault balances
 stage 4  head state   token + curve + protocol reads  (HEAD-ONLY, see below)
-derive                assemble project records, each field carrying its provenance
+derive                assemble project records, each field carrying its provenance,
+                      plus the activity summary: transactions by distinct hash
 verify                re-run fee and burn-accounting assertions against fresh data
 emit                  output/*.json + run summary
 ```
@@ -110,7 +111,8 @@ src/lib/
   provenance.ts     The {value, source, confidence, note} envelope.
 
 src/stages/         One file per pipeline stage (launches, trades, burns, headstate).
-src/derive/         Assembles ProjectRecords. The only place facts are combined.
+src/derive/         Assembles ProjectRecords, and the activity summary that counts
+                    transactions by distinct hash. The only place facts are combined.
 src/verify/         Sanity checks + the optional API cross-check.
 src/emit/           Output writers.
 ```

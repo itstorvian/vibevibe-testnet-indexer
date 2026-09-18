@@ -6,6 +6,7 @@ import { looksCredentialBearing } from "../lib/redact.js";
 import { GENERATIONS, PROTOCOL_CONSTANTS, SHARED, ASSETS, KEEPERS, VERIFIED_AT } from "../../config/factories.js";
 import { config } from "../../config/network.js";
 import type { ProjectRecord } from "../derive/projects.js";
+import type { ActivitySummary } from "../derive/activity.js";
 import type { TradeScanResult } from "../stages/trades.js";
 import type { CheckResult } from "../verify/checks.js";
 import type { ApiComparison } from "../verify/apiCompare.js";
@@ -359,6 +360,36 @@ export function emitTrades(scan: TradeScanResult): void {
   }, 0);
 }
 
+/**
+ * The transaction-count artifact.
+ *
+ * Small and always emitted, like fees.json: it is the artifact a downstream
+ * consumer reads to publish "indexed transactions", so it has to travel with
+ * the scope and provenance that make the number quotable. Aggregates only; the
+ * hashes themselves stay in the opt-in bulk artifacts, where a reader who wants
+ * to reproduce the count can recompute it from trades.json and launches.
+ */
+export function emitActivity(meta: RunMeta, activity: ActivitySummary): void {
+  assertNoCredentialLeak(meta);
+
+  writeJson(path.join(OUTPUT_DIR, "activity.json"), {
+    network: config.label,
+    chainId: config.chainId,
+    generatedAt: new Date().toISOString(),
+    headBlock: meta.headBlock,
+    metric: "indexedTransactions",
+    ...activity,
+    reproduce:
+      "Re-run with --full-trades --emit-bulk and take the size of the set of " +
+      "lowercased transactionHash values across launches, trades and lifecycle events.",
+    warning: activity.isFullHistory
+      ? null
+      : "NOT A LIFETIME TOTAL. At least one contributing scan was windowed, so this " +
+        "figure counts transactions within the block ranges above only. Do not publish " +
+        "it beside lifetime launch totals. Re-run with --full-trades for a lifetime figure.",
+  }, 1);
+}
+
 export function emitFees(
   projects: ProjectRecord[],
   scan: TradeScanResult,
@@ -441,6 +472,7 @@ export function emitSummary(
   projects: ProjectRecord[],
   launches: LaunchRecord[],
   scan: TradeScanResult,
+  activity: ActivitySummary,
   checks: CheckResult[],
   api: ApiComparison
 ): void {
@@ -508,6 +540,48 @@ ${[...byGen.entries()].map(([g, n]) => `| - ${g} | ${fmt(n)} |`).join("\n")}
 | Trades indexed | ${fmt(scan.trades.length)} |
 | Graduations observed | ${fmt(scan.lifecycle.filter((e) => e.kind === "Graduated").length)} |
 | Curve completions observed | ${fmt(scan.lifecycle.filter((e) => e.kind === "CurveCompleted").length)} |
+
+## Indexed transactions
+
+**${fmt(activity.uniqueTransactionCount)}** distinct transaction hashes${
+    activity.isFullHistory ? " across full history" : " **within the scanned windows below**"
+  }.
+
+${activity.definition}
+
+| Category | Distinct transactions |
+|---|---|
+| Launch (\`TokenLaunched\`, \`TokenLaunchedQuoted\`) | ${fmt(activity.launchTransactionCount)} |
+| Curve trades (\`Bought\`, \`Sold\`) | ${fmt(activity.tradeTransactionCount)} |
+| Curve lifecycle (\`CurveCompleted\`, \`Graduated\`, \`CreatorFeesForwarded\`) | ${fmt(activity.lifecycleTransactionCount)} |
+| **Union (the published figure)** | **${fmt(activity.uniqueTransactionCount)}** |
+| Counted in more than one category | ${fmt(activity.sharedAcrossCategories)} |
+| Rows with an unusable transaction hash | ${fmt(activity.unusableTransactionHashes)} |
+
+The components do **not** add up to the union, and should not: ${fmt(
+    activity.sharedAcrossCategories
+  )} transaction(s) emitted events from more than one category, so summing the rows above
+would overstate the total by exactly that many. Raw event counts overstate it further
+still: ${fmt(scan.trades.length)} trade events came from ${fmt(
+    activity.tradeTransactionCount
+  )} distinct transactions, and ${fmt(scan.lifecycle.length)} lifecycle events came from
+${fmt(activity.lifecycleTransactionCount)}.
+
+| Contributing scan | From | To | Full history? |
+|---|---|---|---|
+| Launch events | ${fmt(activity.launchScan.fromBlock)} | ${fmt(activity.launchScan.toBlock)} | ${activity.launchScan.isFullHistory ? "**yes**" : "**no**"} |
+| Curve events | ${fmt(activity.curveScan.fromBlock)} | ${fmt(activity.curveScan.toBlock)} | ${activity.curveScan.isFullHistory ? "**yes**" : "**no**"} |
+
+${
+  activity.isFullHistory
+    ? ""
+    : "> **This is NOT a lifetime transaction count.** A contributing scan was windowed, so " +
+      "publishing this figure beside lifetime launch totals would misrepresent it. Re-run " +
+      "with `--full-trades`.\n"
+}
+Not counted, and not claimable from this number:
+
+${activity.exclusions.map((e) => `- ${e}`).join("\n")}
 
 ### Lifecycle (within the enriched subset)
 

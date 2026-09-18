@@ -7,11 +7,12 @@ import { indexTrades } from "./stages/trades.js";
 import { indexBurns, readVaultHoldings } from "./stages/burns.js";
 import { readTokenStates, readCurveStates, readProtocolState } from "./stages/headstate.js";
 import { deriveProjects } from "./derive/projects.js";
+import { summariseActivity } from "./derive/activity.js";
 import { runAllChecks, printChecks } from "./verify/checks.js";
 import { compareWithApi, disabledComparison } from "./verify/apiCompare.js";
 import {
-  emitFactories, emitProjects, emitTrades, emitFees, emitSummary, emitApiComparison,
-  summariseForeignActivity,
+  emitFactories, emitProjects, emitTrades, emitFees, emitActivity, emitSummary,
+  emitApiComparison, summariseForeignActivity,
   type RunMeta,
 } from "./emit/outputs.js";
 import { OUTPUT_DIR, fmt, setBulkOutputEnabled, bulkOutputEnabled } from "./lib/cache.js";
@@ -228,6 +229,25 @@ async function main(): Promise<void> {
     headBlock: head,
   });
 
+  /**
+   * TRANSACTION ACTIVITY.
+   *
+   * Derived once, from the same records the rest of the run is built on, so
+   * the published figure is reproducible rather than counted ad hoc at an
+   * emitter. Launch scanning is always full history; the curve scan is only
+   * full history under --full-trades, and the summary carries that distinction
+   * rather than blurring it.
+   */
+  const activity = summariseActivity({
+    launches,
+    tradeScan,
+    launchScan: { fromBlock: EARLIEST_DEPLOYMENT_BLOCK, toBlock: head, isFullHistory: true },
+  });
+  console.log(
+    `\n[derive] indexed transactions: ${fmt(activity.uniqueTransactionCount)} distinct tx hashes ` +
+      `(${activity.isFullHistory ? "full history" : "WINDOWED, not a lifetime total"})`
+  );
+
   // ---- verify ----------------------------------------------------------
   // Checks are generation-aware: the retired factory runs a different fee
   // policy (100 bps / 50-50) from the current one (125 bps / 75-25).
@@ -266,13 +286,15 @@ async function main(): Promise<void> {
   emitProjects(projects);
   emitTrades(tradeScan);
   emitFees(projects, tradeScan, checks);
+  emitActivity(meta, activity);
   emitApiComparison(api);
-  emitSummary(meta, projects, launches, tradeScan, checks, api);
+  emitSummary(meta, projects, launches, tradeScan, activity, checks, api);
 
   console.log(`
 done.
   launches       ${fmt(launches.length)} across ${GENERATIONS.length} generations
   trades         ${fmt(tradeScan.trades.length)} (${tradeScan.isFullHistory ? "full history" : "windowed"})
+  transactions   ${fmt(activity.uniqueTransactionCount)} distinct tx hashes (${activity.isFullHistory ? "full history" : "windowed"})
   enriched       ${fmt(args.enrichLimit)} projects with head state
   rpc calls      ${meta.rpcStats.rpcCalls} in ${meta.rpcStats.elapsedSeconds}s
   checks         ${checks.filter((c) => c.passed).length}/${checks.length} passed

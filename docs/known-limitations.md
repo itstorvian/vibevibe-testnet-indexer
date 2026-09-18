@@ -76,6 +76,32 @@ probing or overloading the service.
 
 ---
 
+### The transaction count inherits this scope
+
+`output/activity.json` counts distinct transaction hashes across the launch and curve
+event surfaces. Its `isFullHistory` is true only when the launch scan **and** the curve
+scan both covered full history, which on a default run the curve scan does not. A windowed
+run still produces the figure, but stamps it `isFullHistory: false` with a warning: a
+window's worth of transactions printed beside lifetime launch totals is a
+misrepresentation, not an approximation.
+
+A transaction can be Vibe/Vibe-related and still be absent from that count:
+
+- **post-graduation trading**, which moves to Uniswap v4 and is not indexed at all;
+- **buyback and burn transfers**, which are plain ERC-20 `Transfer` logs found by the
+  separately-scoped burn scan;
+- **`LaunchFeesClaimed`**, the operator's treasury sweep, which is neither launch nor curve
+  activity;
+- **any transaction that emitted none of the included events**: an approval, a plain
+  transfer, a failed call;
+- **launches from an unconfigured factory generation** (section 10), which are never
+  scanned at all.
+
+So it is "indexed transactions", never "total transactions". Nothing in this repository
+could substantiate the second claim.
+
+---
+
 ## 4. `--enrich-limit` and what gets sampled
 
 Head-state reads cost RPC calls, so they are budgeted. The budget is spent in priority

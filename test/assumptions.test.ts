@@ -24,6 +24,9 @@ import {
   UNPARSEABLE,
 } from "../src/lib/redact.js";
 import { summariseForeignActivity } from "../src/emit/outputs.js";
+import { summariseActivity, normalizeTxHash } from "../src/derive/activity.js";
+import type { LaunchRecord } from "../src/stages/launches.js";
+import type { TradeRecord, LifecycleEvent, TradeScanResult } from "../src/stages/trades.js";
 
 /**
  * These tests guard the assumptions that, if wrong, produce a working-looking
@@ -875,5 +878,280 @@ describe("13. helper scripts leak no credential to the terminal", () => {
   test("a malformed endpoint is not echoed back", () => {
     const out = sanitizeErrorMessage(new Error(`bad endpoint: ${SECRET}`), 200, [SECRET]);
     assert.ok(!out.includes(SECRET), "a known-bad endpoint string must be scrubbed literally");
+  });
+});
+
+/**
+ * 14. AN EVENT COUNT IS NOT A TRANSACTION COUNT
+ *
+ * The public "indexed transactions" metric counts distinct TRANSACTION HASHES,
+ * not rows. One transaction routinely emits several indexed events: a buy that
+ * tips a curve over its target emits Bought and CurveCompleted together, a
+ * launch with a non-zero initialBuy emits TokenLaunched and the curve's first
+ * Bought, and CreatorFeesForwarded rides along with a trade.
+ *
+ * Summing rows, or summing the per-category counts, therefore overstates the
+ * figure by exactly the overlap, and the overlap grows with the activity a
+ * reader most wants counted. These tests pin that the derivation takes the
+ * union, normalises before comparing, and refuses to dress a windowed scan up
+ * as a lifetime total.
+ */
+describe("14. transactions are counted by distinct hash, never by event row", () => {
+  const hash = (n: number): string => `0x${n.toString(16).padStart(64, "0")}`;
+
+  const launch = (tx: string, i = 0) =>
+    ({
+      key: `current:${i}`,
+      generation: "current",
+      factory: "0xfac",
+      launchId: String(i),
+      token: `0xtoken${i}`,
+      curve: `0xcurve${i}`,
+      creator: "0xcreator",
+      creatorFeeRecipient: "0xrecipient",
+      creatorVault: "0xvault",
+      quoteCurrency: null,
+      isQuotedLaunch: false,
+      initialBuy: "0",
+      initialTokensBought: "0",
+      metadataSchemaVersion: 1,
+      metadataDigest: "0x00",
+      metadataURI: "",
+      deploymentBlock: 100 + i,
+      deploymentTxHash: tx,
+      logIndex: 0,
+    }) as unknown as LaunchRecord;
+
+  const trade = (tx: string, logIndex = 0) =>
+    ({
+      curve: "0xcurve0",
+      token: "0xtoken0",
+      side: "buy",
+      trader: "0xtrader",
+      recipient: "0xtrader",
+      grossWei: "0",
+      curveQuoteWei: "0",
+      ethReceivedWei: null,
+      tokenAmount: "0",
+      creatorFeeWei: "0",
+      protocolFeeWei: "0",
+      totalFeeWei: "0",
+      blockNumber: 200,
+      txHash: tx,
+      logIndex,
+    }) as unknown as TradeRecord;
+
+  const lifecycle = (tx: string, logIndex = 1) =>
+    ({
+      curve: "0xcurve0",
+      token: "0xtoken0",
+      kind: "CurveCompleted",
+      blockNumber: 200,
+      txHash: tx,
+      logIndex,
+    }) as unknown as LifecycleEvent;
+
+  const scan = (
+    trades: TradeRecord[],
+    lifecycleEvents: LifecycleEvent[],
+    isFullHistory = true,
+    bounds: [number, number] = [EARLIEST_DEPLOYMENT_BLOCK, 1_000_000]
+  ): TradeScanResult => ({
+    trades,
+    lifecycle: lifecycleEvents,
+    fromBlock: bounds[0],
+    toBlock: bounds[1],
+    isFullHistory,
+    foreignLogsIgnored: 0,
+    foreignAddressSample: [],
+  });
+
+  const FULL_LAUNCH_SCAN = {
+    fromBlock: EARLIEST_DEPLOYMENT_BLOCK,
+    toBlock: 1_000_000,
+    isFullHistory: true,
+  };
+
+  const summarise = (
+    launches: LaunchRecord[],
+    tradeScan: TradeScanResult,
+    launchScan = FULL_LAUNCH_SCAN
+  ) => summariseActivity({ launches, tradeScan, launchScan });
+
+  test("distinct launch transactions are counted once each", () => {
+    const a = summarise(
+      [launch(hash(1), 0), launch(hash(2), 1), launch(hash(3), 2)],
+      scan([], [])
+    );
+    assert.equal(a.launchTransactionCount, 3);
+    assert.equal(a.uniqueTransactionCount, 3);
+  });
+
+  test("a repeated launch transaction hash counts once", () => {
+    // Two launches in one transaction: a batch deploy, or simply the same log
+    // reaching the deriver twice through an overlapping cached chunk.
+    const a = summarise([launch(hash(1), 0), launch(hash(1), 1)], scan([], []));
+    assert.equal(a.launchTransactionCount, 1, "the hash is the unit, not the record");
+    assert.equal(a.uniqueTransactionCount, 1);
+  });
+
+  test("several trade events from one transaction count once", () => {
+    // A router buy touching three curves emits three Bought logs in one tx.
+    const a = summarise([], scan([trade(hash(9), 0), trade(hash(9), 1), trade(hash(9), 2)], []));
+    assert.equal(a.tradeTransactionCount, 1);
+    assert.equal(a.uniqueTransactionCount, 1, "3 events, 1 transaction");
+  });
+
+  test("a trade and a lifecycle event sharing a transaction count once globally", () => {
+    // The real case: the buy that completes the curve emits Bought and
+    // CurveCompleted in the same transaction.
+    const a = summarise([], scan([trade(hash(9))], [lifecycle(hash(9))]));
+    assert.equal(a.tradeTransactionCount, 1);
+    assert.equal(a.lifecycleTransactionCount, 1);
+    assert.equal(a.uniqueTransactionCount, 1, "must be the union, not the sum");
+    assert.equal(a.sharedAcrossCategories, 1, "the overlap must be reported, not hidden");
+  });
+
+  test("a launch and a curve event sharing a transaction count once globally", () => {
+    // A launch with a non-zero initialBuy: TokenLaunched plus the first Bought.
+    const a = summarise([launch(hash(5))], scan([trade(hash(5))], []));
+    assert.equal(a.launchTransactionCount, 1);
+    assert.equal(a.tradeTransactionCount, 1);
+    assert.equal(a.uniqueTransactionCount, 1);
+    assert.equal(a.sharedAcrossCategories, 1);
+  });
+
+  test("the platform total is the union of the categories, never their sum", () => {
+    // 3 launches, 4 trade txs, 2 lifecycle txs, with hash(3) and hash(4) shared.
+    const a = summarise(
+      [launch(hash(1), 0), launch(hash(2), 1), launch(hash(3), 2)],
+      scan(
+        [trade(hash(3)), trade(hash(4)), trade(hash(5)), trade(hash(6))],
+        [lifecycle(hash(4)), lifecycle(hash(7))]
+      )
+    );
+    assert.equal(a.launchTransactionCount, 3);
+    assert.equal(a.tradeTransactionCount, 4);
+    assert.equal(a.lifecycleTransactionCount, 2);
+    const naiveSum =
+      a.launchTransactionCount + a.tradeTransactionCount + a.lifecycleTransactionCount;
+    assert.equal(naiveSum, 9);
+    assert.equal(a.uniqueTransactionCount, 7, "hashes 1..7, each exactly once");
+    assert.equal(a.sharedAcrossCategories, naiveSum - a.uniqueTransactionCount);
+  });
+
+  test("different transaction hashes are counted separately", () => {
+    const a = summarise([], scan([trade(hash(1)), trade(hash(2)), trade(hash(3))], []));
+    assert.equal(a.uniqueTransactionCount, 3);
+    assert.equal(a.sharedAcrossCategories, 0);
+  });
+
+  test("normalisation folds case and a missing prefix, and nothing else", () => {
+    const canonical = hash(0xabc);
+    const variants = [canonical, canonical.toUpperCase(), `  ${canonical}  `, canonical.slice(2)];
+    for (const v of variants) {
+      assert.equal(normalizeTxHash(v), canonical, `"${v}" must normalise to the canonical form`);
+    }
+    // ... and a hash that differs by one nibble must stay distinct.
+    assert.notEqual(normalizeTxHash(hash(0xabc)), normalizeTxHash(hash(0xabd)));
+  });
+
+  test("normalisation creates neither duplicates nor misses in the count", () => {
+    const canonical = hash(0xabc);
+    const a = summarise(
+      [launch(canonical.toUpperCase())],
+      scan([trade(canonical.slice(2)), trade(` ${canonical} `)], [lifecycle(canonical)])
+    );
+    assert.equal(a.uniqueTransactionCount, 1, "four spellings of one hash are one transaction");
+    assert.equal(a.unusableTransactionHashes, 0, "every spelling was usable");
+
+    // Two genuinely different hashes must not be folded together by trimming.
+    const b = summarise([], scan([trade(hash(1)), trade(hash(2))], []));
+    assert.equal(b.uniqueTransactionCount, 2);
+  });
+
+  test("an unusable transaction hash is reported, never silently counted or dropped", () => {
+    const a = summarise([], scan([trade("0xnothex"), trade(""), trade(hash(1))], []));
+    assert.equal(a.tradeTransactionCount, 1, "only the real hash counts");
+    assert.equal(a.uniqueTransactionCount, 1);
+    assert.equal(a.unusableTransactionHashes, 2, "the rejects must surface in the artifact");
+    for (const bad of [null, undefined, 42, {}, "0x", `${hash(1)}0`]) {
+      assert.equal(normalizeTxHash(bad), null, `${String(bad)} is not a transaction hash`);
+    }
+  });
+
+  test("a windowed curve scan cannot be presented as a full-history metric", () => {
+    const windowed = summarise(
+      [launch(hash(1))],
+      scan([trade(hash(2))], [], false, [900_000, 1_000_000])
+    );
+    assert.equal(windowed.isFullHistory, false, "one windowed leg makes the whole metric windowed");
+    assert.equal(windowed.curveScan.isFullHistory, false);
+    assert.equal(windowed.launchScan.isFullHistory, true, "the launch leg is still full history");
+    assert.deepEqual(
+      [windowed.curveScan.fromBlock, windowed.curveScan.toBlock],
+      [900_000, 1_000_000],
+      "the bounds must travel with the number"
+    );
+
+    const full = summarise([launch(hash(1))], scan([trade(hash(2))], [], true));
+    assert.equal(full.isFullHistory, true);
+
+    // And a full-history curve scan cannot rescue a windowed launch scan either.
+    const windowedLaunches = summarise([launch(hash(1))], scan([trade(hash(2))], [], true), {
+      fromBlock: 900_000,
+      toBlock: 1_000_000,
+      isFullHistory: false,
+    });
+    assert.equal(windowedLaunches.isFullHistory, false);
+  });
+
+  test("a windowed run's artifact carries the warning, and a full one does not", () => {
+    const outputsSrc = fs.readFileSync(new URL("../src/emit/outputs.ts", import.meta.url), "utf8");
+    const emitter = outputsSrc.slice(
+      outputsSrc.indexOf("export function emitActivity"),
+      outputsSrc.indexOf("export function emitFees")
+    );
+    assert.match(
+      emitter,
+      /activity\.isFullHistory\s*[\r\n\s]*\?\s*null/,
+      "a full-history run must not carry a warning it does not deserve"
+    );
+    assert.match(emitter, /NOT A LIFETIME TOTAL/,
+      "a windowed run must say so in the artifact itself");
+    assert.match(outputsSrc, /## Indexed transactions/,
+      "the markdown summary must show the metric and its scope");
+  });
+
+  test("empty datasets return zero rather than throwing or guessing", () => {
+    const a = summarise([], scan([], []));
+    assert.equal(a.uniqueTransactionCount, 0);
+    assert.equal(a.launchTransactionCount, 0);
+    assert.equal(a.tradeTransactionCount, 0);
+    assert.equal(a.lifecycleTransactionCount, 0);
+    assert.equal(a.sharedAcrossCategories, 0);
+    assert.equal(a.unusableTransactionHashes, 0);
+  });
+
+  test("the published scope names its surfaces and discloses what it excludes", () => {
+    const a = summarise([], scan([], []));
+    assert.equal(a.scope, "launch-and-curve-events", "the scope is not 'all transactions'");
+    for (const ev of [
+      "TokenLaunched", "TokenLaunchedQuoted", "Bought", "Sold",
+      "CurveCompleted", "Graduated", "CreatorFeesForwarded",
+    ]) {
+      assert.ok(a.includedEventSurfaces.includes(ev), `${ev} must be listed as included`);
+    }
+    const exclusions = a.exclusions.join(" ");
+    assert.match(exclusions, /post-graduation/i, "DEX trading after graduation must be disclosed");
+    assert.match(exclusions, /burn/i, "the separately-scoped burn scan must be disclosed");
+    assert.match(exclusions, /LaunchFeesClaimed/, "the factory event we skip must be disclosed");
+    assert.match(exclusions, /not configured|unconfigured/i,
+      "silent incompleteness from an unconfigured factory must be disclosed");
+    assert.doesNotMatch(
+      a.definition,
+      /\b(all|total|every) (vibe|vibe\/vibe|protocol)? ?transactions\b/i,
+      "the definition must not claim total protocol coverage"
+    );
   });
 });

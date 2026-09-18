@@ -1,5 +1,5 @@
 {
- "_README": "SAMPLE ONLY: the small summary artifacts from one real testnet run, trimmed. Produced by: npm run index -- --enrich-limit 800 --trade-window 200000 --burn-window 2000000 --compare-api. NOTE: this sample predates two fields that current runs emit, run.rpcEndpoint and run.foreignActivity. They are absent here because this run happened before they existed, not because they are optional. The figures have deliberately NOT been regenerated or back-filled.",
+ "_README": "SAMPLE ONLY: the small summary artifacts from one real testnet run, trimmed. Produced by: npm run index -- --enrich-limit 800 --trade-window 200000 --burn-window 2000000 --compare-api. NOTE: this sample predates three things that current runs emit: run.rpcEndpoint, run.foreignActivity, and the whole of output/activity.json (the indexed-transaction count). They are absent here because this run happened before they existed, not because they are optional. This run's trade scan was a 200k-block window in any case, so it could not have produced a lifetime transaction count. The figures have deliberately NOT been regenerated or back-filled.",
  "network": "TESTNET",
  "chainId": 46630,
  "run": {

@@ -168,6 +168,32 @@ were excluded). Trade records: `curve`, `token`, `side`, `trader`, `recipient`,
 `CurveCompleted`, `Graduated`, `CreatorFeesForwarded`, split out because they are a much
 smaller set than trades.
 
+## `output/activity.json`
+The transaction metric, and the scope that makes it quotable.
+
+| Field | Meaning |
+|---|---|
+| `uniqueTransactionCount` | **The published figure.** Distinct transaction hashes across every included surface, deduplicated globally. |
+| `scope` | `"launch-and-curve-events"`. Deliberately not "all Vibe/Vibe transactions". |
+| `isFullHistory` | True only when *every* contributing scan covered full history. False means the figure is a window's worth and must not sit beside lifetime totals. |
+| `launchTransactionCount` / `tradeTransactionCount` / `lifecycleTransactionCount` | Distinct hashes *within* each category. These do **not** sum to the total. |
+| `sharedAcrossCategories` | How many hashes appear in more than one category, i.e. exactly how much the naive sum overstates by. |
+| `unusableTransactionHashes` | Rows whose hash could not be normalised to 32 bytes and were not counted. Reported, never silently dropped. |
+| `launchScan` / `curveScan` | Block bounds and full-history flag for each contributing scan. |
+| `includedEventSurfaces` | The exact events that contribute a transaction. |
+| `exclusions` | What a Vibe/Vibe transaction can be and still be absent. |
+| `warning` | Null on a full-history run; a refusal-to-be-misread paragraph otherwise. |
+
+**Why a hash and not a row.** One transaction can emit several of the included events: the
+buy that tips a curve over its target emits `Bought` and `CurveCompleted` together, and a
+launch with a non-zero `initialBuy` emits `TokenLaunched` and the curve's first `Bought`.
+Counting event rows, or summing the three category counts, overstates transactions by
+exactly that overlap. Derivation lives in `src/derive/activity.ts`; no emitter counts
+hashes of its own.
+
+Aggregates only. The hashes themselves stay in the opt-in bulk artifacts, where the count
+can be reproduced.
+
 ## `output/fees.json`
 `policy` (the constants, with their evidence labels), `observed` (measured aggregates),
 `buybackBurn` (both legs), and `checks` (the sanity-check results). The second-level

@@ -28,8 +28,13 @@ any private API.
 
 In the reference run it reconstructed **77,166 launches across three factory generations**, with
 provably dense launch-ID ranges (zero gaps, zero duplicates), and all sanity checks passing. The
-[latest validation run](#latest-validation-run), on 2026-09-17, reconstructed **96,398** launches
-with the same properties.
+[latest validation run](#latest-validation-run), on 2026-09-18, reconstructed **97,733** launches
+with the same properties, plus **2,098,026 indexed transactions** over full history.
+
+It also counts **indexed transactions**: distinct transaction hashes across the launch and
+curve event surfaces, deduplicated globally so that a transaction emitting several events
+counts once. That is a different number from an event count or a trade count, and it needs a
+full-history curve scan to be a lifetime figure. See [Counting transactions](#counting-transactions).
 
 Every emitted field carries its provenance, so you can tell a decoded event from a head-only
 contract read from an arithmetic derivation.
@@ -79,7 +84,7 @@ Reproduced by this indexer against testnet 46630:
 > The chain is live; totals drift between runs. Every figure this tool emits is stamped with
 > the head block it was read at.
 >
-> **Three runs are quoted in this repository and their totals differ, because the chain kept
+> **Four runs are quoted in this repository and their totals differ, because the chain kept
 > producing launches between them.** None has been back-fitted to another, and none refreshes
 > automatically.
 >
@@ -87,7 +92,12 @@ Reproduced by this indexer against testnet 46630:
 > |---|---|---|---|---|
 > | **Reference run** | 2026-09-13 | see below | 77,166 | This section and the generation table below |
 > | Sample run | 2026-09-13T17:36Z | 118,855,856 | 77,226 | [`sample-output/`](sample-output/) |
-> | **Latest validation run** | **2026-09-17T08:08Z** | **120,708,793** | **96,398** | [Latest validation run](#latest-validation-run) below |
+> | Windowed validation run | 2026-09-17T08:08Z | 120,708,793 | 96,398 | superseded; kept here for the record |
+> | **Latest validation run** | **2026-09-18T17:00Z** | **121,309,670** | **97,733** | [Latest validation run](#latest-validation-run) below |
+>
+> The 2026-09-17 run scanned curve events over a 200,000-block window. That is why it carries
+> no transaction count: a window's worth of transactions is not a lifetime total, and the
+> figure was not produced rather than produced and caveated.
 >
 > The reference-run figures are kept because the written findings were derived against them.
 > Re-run the indexer for current numbers.
@@ -96,33 +106,68 @@ Reproduced by this indexer against testnet 46630:
 
 ## Latest validation run
 
-**2026-09-17.** A read-only run against Robinhood Chain testnet, chain ID 46630.
+**2026-09-18.** A read-only run against Robinhood Chain testnet, chain ID 46630. The first run
+with a **full-history curve scan**, which is what makes the transaction count a lifetime figure.
 
 ```bash
-npm run index -- --enrich-limit 800 --trade-window 200000 --burn-window 2000000 --compare-api
+npm run index -- --full-trades --enrich-limit 800 --burn-window 2000000 --compare-api
 ```
 
 | | |
 |---|---|
-| Head block | `120,708,793` |
-| Finished | `2026-09-17T08:08:35Z` |
-| **Total launches** | **96,398** across 3 configured factory generations |
+| Head block | `121,309,670` |
+| Started / finished | `2026-09-18T16:27:46Z` / `2026-09-18T17:00:25Z` |
+| **Total launches** | **97,733** across 3 configured factory generations |
+| **Indexed transactions** | **2,098,026** distinct transaction hashes, full history |
+| Trades indexed | 1,993,340 (1,565,964 buys, 427,376 sells), full history |
+| Lifecycle events | 75,459, from 62,848 distinct transactions |
 | Sanity checks | **5 of 5 passed** |
-| RPC calls | 167 in 104s (warm launch cache) |
+| RPC calls | 1,493 in 1,959s, 8 retries, 0 failures, 0 chunk splits |
 
 | Generation | Launches | Observed launchId range | Dense | Duplicates | Last launch seen at block |
 |---|---|---|---|---|---|
-| `retired` | 14,799 | `0 to 14,798` | yes | 0 | 120,622,795 |
-| `legacy` | 42,946 | `0 to 42,945` | yes | 0 | 120,690,796 |
-| `current` | 38,653 | `0 to 38,652` | yes | 0 | 120,707,948 |
+| `retired` | 14,800 | `0 to 14,799` | yes | 0 | 121,064,267 |
+| `legacy` | 43,220 | `0 to 43,219` | yes | 0 | 121,093,373 |
+| `current` | 39,713 | `0 to 39,712` | yes | 0 | 121,306,584 |
 
-All three configured factories were readable on-chain and **all three had produced launches
-within this run's window**, including the one the operator labels `retired`. No additional
-factory was identified by the checks performed, which is not the same as none existing: this
-indexer cannot discover a factory that is not in `config/factories.ts`.
+All three configured factories were readable on-chain and all three had produced launches
+within this run's history, including the one the operator labels `retired`, which added one
+launch since the previous run. Its most recent launch sits 245,403 blocks below the head
+against 3,086 for `current`, so it is trailing, not idle.
 
-Trade and burn figures are windowed, not lifetime: trades over blocks
-`120,508,793 to 120,708,793`, burns over `118,708,793 to 120,708,793`.
+**502 logs carrying a curve event signature came from contracts outside the configured
+factories.** The previous run reported none, but its curve scan covered 200,000 blocks
+against this one's 25,393,432, so the two are not comparable.
+
+Those 502 logs came from **86 distinct contracts**, and all 86 were reviewed after the run:
+
+| Evidence | Result |
+|---|---|
+| Bytecode identical to a Vibe curve (any generation) | **0 of 86** |
+| Answered `creatorVault()` or `TOTAL_FEE_BPS()`, the Vibe-specific members | **0 of 86** |
+| `token()` names a known Vibe launch token | **0 of 86** |
+| Emitted more than two of the five curve events | **0 of 86** |
+| Emitted both `Bought` and `Sold` | 2 of 86 |
+| Coherent bonding curve of a different design | 10 of 86 |
+
+Ten contracts (bytecode sizes 8444 and 9016, against Vibe's 7483 / 7500 / 8915) answer
+`token()`, `complete()`, `graduated()` and `launchTimestamp()`, and their tokens point back
+at them, but they refuse both Vibe-specific members. That is what a different launchpad
+sharing an event signature looks like. The remaining 76 answer little or nothing of the curve
+read surface.
+
+A **topic-only scan for `TokenLaunched` / `TokenLaunchedQuoted` across all addresses**, over
+1,130,000 blocks covering the regions where those contracts were active, found 4,379 launches
+emitted by **only the three configured factories**. No unconfigured contract emitted a Vibe
+launch event in any window examined.
+
+**This is a bounded negative result, not proof.** The windows were targeted rather than
+exhaustive, and this indexer still cannot discover a factory that is not in
+`config/factories.ts`.
+
+Burn figures are windowed, not lifetime: blocks `119,309,670 to 121,309,670`. Launch and curve
+scans both covered full history, so launch totals and the transaction count are lifetime
+figures.
 
 **The chain is active and these totals change continuously.** Treat every number here as an
 observation timestamped at the head block above, not as a standing property of the protocol.
@@ -227,6 +272,7 @@ Written to `output/`.
 |---|---|
 | `factories.json` | All configured generations, launches indexed per generation, shared contracts, keepers, quote assets, run metadata, launchId audit, and `run.foreignActivity` (curve-shaped activity from unrecognised contracts) |
 | `fees.json` | **Fee policy per generation**, observed aggregates, burn accounting (both legs), sanity-check results |
+| `activity.json` | **Indexed transactions**: distinct transaction hashes across the launch and curve event surfaces, with per-category counts, scan scope, included events and exclusions. See [Counting transactions](#counting-transactions) below |
 | `lifecycle.json` | Curve completions, graduations, creator-fee forwards |
 | `indexer-summary.md` | Human-readable run report |
 | `projects-enriched-sample.json` | Up to 500 fully enriched project records, readable by hand |
@@ -338,9 +384,77 @@ never hold a burn-address balance.
 `transfersUnlocked() === false` means the token cannot move at all: not to a DEX, a lending
 market, or the burn address. Check it before any transfer path.
 
-**5. Graduation is two transactions.**
+**5. An event count is not a transaction count.**
+One transaction can emit `Bought` and `CurveCompleted`, or `TokenLaunched` and the curve's
+first `Bought`. Counting event rows therefore overstates transactions. The published
+"indexed transactions" figure counts distinct transaction hashes instead: see
+[Counting transactions](#counting-transactions).
+
+**6. Graduation is two transactions.**
 `CurveCompleted` then `Graduated`, separated by a permissionless, retryable `graduate()` call.
 Gaps of 91 and 1,030 blocks were observed. Model the intermediate state explicitly.
+
+---
+
+## Counting transactions
+
+`output/activity.json` publishes **indexed transactions**:
+
+> the number of **distinct transaction hashes** observed across the launch and curve event
+> surfaces this project indexes.
+
+### Why an event count is not a transaction count
+
+One transaction routinely emits several of the events this indexer decodes:
+
+- the buy that tips a curve over its target emits `Bought` **and** `CurveCompleted`;
+- a launch with a non-zero `initialBuy` emits `TokenLaunched` **and** the curve's first `Bought`;
+- `CreatorFeesForwarded` rides along with a trade.
+
+So summing event rows overstates transactions, and so does summing the per-category counts.
+The unit of counting is therefore the transaction hash, normalised and deduplicated
+globally, and the platform figure is the **union** of the categories, never their sum.
+`sharedAcrossCategories` reports exactly how much the naive sum would have overstated by.
+
+The derivation is one module, [`src/derive/activity.ts`](src/derive/activity.ts). No
+emitter counts hashes of its own.
+
+### A full-history curve scan is required
+
+Launches are always scanned over full history; curve events are not, unless you pass
+`--full-trades`. A default run still emits the figure, stamped `isFullHistory: false` and
+carrying a warning, because a window's worth of transactions printed beside lifetime launch
+totals is a misrepresentation rather than an approximation.
+
+For a lifetime figure:
+
+```bash
+npm run index -- --full-trades --enrich-limit 800 --burn-window 2000000 --compare-api
+```
+
+Expect a long run: ~25M blocks of topic-only curve queries against a shared public endpoint.
+
+`--enrich-limit` is deliberately small here. Head-state enrichment reads `name`, `symbol` and
+lifecycle state per launch; the transaction count needs none of it, and raising the limit costs
+tens of thousands of extra RPC calls for nothing. `--emit-bulk` is not needed either: the count
+lands in `activity.json`, which always emits.
+
+### What it is not
+
+**Not "total Vibe/Vibe transactions".** A transaction can be Vibe/Vibe-related and still be
+absent:
+
+| Excluded | Why |
+|---|---|
+| Post-graduation DEX trading | Trading moves to Uniswap v4 at graduation and is not indexed by this project at all |
+| Buyback and burn transfers | Plain ERC-20 `Transfer` logs, found by the separately-scoped burn scan |
+| `LaunchFeesClaimed` | The operator's treasury sweep: neither launch nor curve activity |
+| Transactions emitting none of the included events | An approval, a plain transfer, a failed call, a read |
+| Launches from an unconfigured factory | Never scanned, silently. See [Known Limitations](#known-limitations) |
+
+The included surfaces are exactly `TokenLaunched`, `TokenLaunchedQuoted`, `Bought`,
+`Sold`, `CurveCompleted`, `Graduated` and `CreatorFeesForwarded`, and `activity.json`
+lists them so a reader never has to infer the scope from prose.
 
 ---
 
@@ -372,6 +486,9 @@ Gaps of 91 and 1,030 blocks were observed. Model the intermediate state explicit
   omit recent launches from one generation.
 - **Post-graduation trading is not indexed.** Trading moves to Uniswap v4 after graduation;
   only curve-phase trades are covered, so totals understate graduated projects.
+- **"Indexed transactions" is scoped, not total.** It counts distinct transaction hashes on
+  the launch and curve event surfaces only, and is a lifetime figure only under
+  `--full-trades`. See [Counting transactions](#counting-transactions) for what it excludes.
 - **No reorg handling** beyond a 32-block cache exclusion.
 
 Full detail: [`docs/known-limitations.md`](docs/known-limitations.md).

@@ -41,7 +41,12 @@ export function writeBulk(file: string, write: () => void): boolean {
  */
 export function writeRaw(file: string, value: unknown, indent = 0): boolean {
   if (!BULK_ENABLED) return false;
-  writeJson(file, value, indent);
+  // A full-history curve scan dumps millions of rows here, and JSON.stringify
+  // over the whole array throws "Invalid string length" past ~537 MB: mid-run,
+  // after hours of scanning. Arrays are therefore streamed; every other raw
+  // artifact is small enough for the ordinary path.
+  if (Array.isArray(value)) writeJsonArray(file, value);
+  else writeJson(file, value, indent);
   return true;
 }
 
@@ -99,6 +104,31 @@ export function writeJsonStreamed(
     }
     if (buf) fs.writeSync(fd, buf);
     fs.writeSync(fd, "\n ]\n}\n");
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+
+/**
+ * A bare JSON array, streamed. Same reason as `writeJsonStreamed`: the raw
+ * dumps outgrew Node's maximum string length once trades were scanned over
+ * full history rather than a window.
+ */
+export function writeJsonArray(file: string, items: readonly unknown[]): void {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  const fd = fs.openSync(file, "w");
+  try {
+    fs.writeSync(fd, "[");
+    let buf = "";
+    for (let i = 0; i < items.length; i++) {
+      buf += (i > 0 ? "," : "") + stringify(items[i], 0);
+      if (i % 500 === 499) {
+        fs.writeSync(fd, buf);
+        buf = "";
+      }
+    }
+    if (buf) fs.writeSync(fd, buf);
+    fs.writeSync(fd, "]");
   } finally {
     fs.closeSync(fd);
   }
